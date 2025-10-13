@@ -25,7 +25,7 @@ export const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 py-20 text-center max-w-5xl">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in">
           Encontre seus óculos de grau, solares e acessórios de luxo na{" "}
-          <span className="gradient-accent bg-clip-text text-transparent">
+          <span className="text-secondary">
             Óptica Davanti
           </span>{" "}
           – Ijuí
