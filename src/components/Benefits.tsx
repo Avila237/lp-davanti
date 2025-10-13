@@ -97,7 +97,7 @@ export const Benefits = () => {
         </div>
 
         {/* Exclusive Brands Section */}
-        <article className="mt-20 mb-16">
+        <article id="exclusivos" className="mt-20 mb-16">
           <header className="text-center mb-12">
             <div className="inline-flex items-center gap-2 mb-4">
               <Award className="h-8 w-8 text-secondary" />

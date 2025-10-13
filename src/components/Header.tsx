@@ -7,6 +7,7 @@ import logo from "@/assets/logo-davanti.png";
 const menuItems = [
   { label: "Início", href: "#inicio" },
   { label: "Produtos", href: "#produtos" },
+  { label: "Exclusivos", href: "#exclusivos" },
   { label: "Diferenciais", href: "#diferenciais" },
   { label: "Lojas", href: "#lojas" },
   { label: "Contato", href: "#contato" },
