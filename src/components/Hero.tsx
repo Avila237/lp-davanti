@@ -4,7 +4,8 @@ import heroImage from "@/assets/hero-optica.jpg";
 
 export const Hero = () => {
   const handleWhatsApp = () => {
-    window.open("https://wa.me/5555991372807", "_blank");
+    const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
+    window.open(`https://wa.me/5555991372807?text=${message}`, "_blank");
   };
 
   return (
