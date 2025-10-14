@@ -29,11 +29,25 @@ const products = [
     icon: "⌚",
   },
   {
+    title: "Jóias em Ouro",
+    description: "Peças exclusivas em ouro com qualidade e certificação garantidas",
+    price: "Consulte-nos",
+    image: acessorios,
+    icon: "💍",
+  },
+  {
     title: "Semi-Jóias e Acessórios",
-    description: "Peças em ouro com qualidade garantida",
+    description: "Semi-joias folheadas e acessórios fashion para complementar seu visual",
     price: "Consulte-nos",
     image: acessorios,
     icon: "💎",
+  },
+  {
+    title: "Tradição Gaúcha",
+    description: "Cuias, bombas de chimarrão, facas e fivelas artesanais de alta qualidade",
+    price: "Diversas opções",
+    image: acessorios,
+    icon: "🧉",
   },
 ];
 
@@ -55,7 +69,7 @@ export const Products = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product, index) => (
             <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth overflow-hidden group">
               <div className="relative h-64 overflow-hidden">
