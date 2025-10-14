@@ -64,7 +64,7 @@ export const Locations = () => {
                     variant="outline"
                     size="sm"
                     className="w-full"
-                    onClick={() => window.open("https://share.google/Youse114as0PB994r", "_blank")}
+                    onClick={() => window.open("https://share.google/7vrMA2wIBDYy8v8ji", "_blank")}
                   >
                     <Navigation className="mr-2 h-4 w-4" />
                     Ver no Google Maps
