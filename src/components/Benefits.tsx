@@ -86,7 +86,7 @@ export const Benefits = () => {
             const Icon = benefit.icon;
             return (
               <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth">
-                <CardContent className="pt-6 flex items-start gap-4">
+                <CardContent className="pt-6 flex items-center gap-4">
                   <div className="p-3 rounded-lg bg-secondary/10">
                     <Icon className="h-6 w-6 text-secondary" />
                   </div>
