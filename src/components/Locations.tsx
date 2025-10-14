@@ -46,7 +46,7 @@ export const Locations = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col flex-grow">
-                <div className="flex-grow space-y-4">
+                <div className="flex-grow space-y-4 min-h-[6rem]">
                   <p className="text-muted-foreground text-sm leading-relaxed">{location.address}</p>
                   <p className="text-foreground font-semibold">📱 {location.phone}</p>
                 </div>
