@@ -15,7 +15,7 @@ export const useAnalytics = () => {
 
   const trackPageView = (url: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('config', 'G-XXXXXXXXXX', {
+      (window as any).gtag('config', 'G-VBHZZMCJTZ', {
         page_path: url,
       });
     }

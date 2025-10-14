@@ -1,9 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import heroImage from "@/assets/hero-optica.jpg";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 export const Hero = () => {
+  const { trackEvent } = useAnalytics();
+
   const handleWhatsApp = () => {
+    trackEvent('whatsapp_click', {
+      section: 'hero',
+      button_text: 'Conversar no WhatsApp'
+    });
     const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
     window.open(`https://wa.me/5555991372807?text=${message}`, "_blank");
   };

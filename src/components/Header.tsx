@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import logo from "@/assets/logo-davanti.png";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 const menuItems = [
   { label: "Início", href: "#inicio" },
@@ -14,6 +15,7 @@ const menuItems = [
 ];
 
 export const Header = () => {
+  const { trackEvent } = useAnalytics();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,14 +28,28 @@ export const Header = () => {
   }, []);
 
   const handleWhatsApp = () => {
+    trackEvent('whatsapp_click', {
+      section: 'header',
+      button_text: 'WhatsApp'
+    });
     window.open("https://wa.me/5555991372807", "_blank");
   };
 
   const handleCall = () => {
+    trackEvent('phone_call', {
+      section: 'header',
+      button_text: 'Ligar'
+    });
     window.location.href = "tel:+5555991372807";
   };
 
-  const handleNavClick = (href: string) => {
+  const handleNavClick = (href: string, label?: string) => {
+    if (label) {
+      trackEvent('navigation_click', {
+        link_name: label,
+        link_section: href
+      });
+    }
     setIsOpen(false);
     const element = document.querySelector(href);
     if (element) {
@@ -81,7 +97,7 @@ export const Header = () => {
                 href={item.href}
                 onClick={(e) => {
                   e.preventDefault();
-                  handleNavClick(item.href);
+                  handleNavClick(item.href, item.label);
                 }}
                 className="text-white/80 hover:text-secondary transition-smooth font-medium"
               >
@@ -139,7 +155,7 @@ export const Header = () => {
                       href={item.href}
                       onClick={(e) => {
                         e.preventDefault();
-                        handleNavClick(item.href);
+                        handleNavClick(item.href, item.label);
                       }}
                       className="text-white text-lg hover:text-secondary transition-smooth font-medium"
                     >

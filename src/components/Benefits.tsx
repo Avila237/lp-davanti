@@ -6,6 +6,7 @@ import dieselLogo from "@/assets/brands/diesel.png";
 import montBlancLogo from "@/assets/brands/mont-blanc.png";
 import offWhiteLogo from "@/assets/brands/off-white.png";
 import bottegaVenetaLogo from "@/assets/brands/bottega-veneta.png";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 const benefits = [
   {
@@ -67,7 +68,13 @@ const exclusiveBrands = {
 };
 
 export const Benefits = () => {
+  const { trackEvent } = useAnalytics();
+
   const handleWhatsApp = () => {
+    trackEvent('whatsapp_click', {
+      section: 'benefits',
+      button_text: 'Falar com nossa equipe'
+    });
     const message = encodeURIComponent("Olá, vim pelo site e gostaria de olhar alguns exclusivos");
     window.open(`https://wa.me/5555991068376?text=${message}`, "_blank");
   };

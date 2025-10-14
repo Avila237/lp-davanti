@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Star, Shield, Award, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 const testimonials = [
   {
@@ -26,7 +27,13 @@ const guarantees = [
 ];
 
 export const Testimonials = () => {
+  const { trackEvent } = useAnalytics();
+
   const handleWhatsApp = () => {
+    trackEvent('whatsapp_click', {
+      section: 'testimonials',
+      button_text: 'Falar com um consultor agora'
+    });
     const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
     window.open(`https://wa.me/5555991372807?text=${message}`, "_blank");
   };

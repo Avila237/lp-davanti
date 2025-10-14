@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, MessageCircle, Navigation } from "lucide-react";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 const locations = [
   {
@@ -27,6 +28,25 @@ const locations = [
 ];
 
 export const Locations = () => {
+  const { trackEvent } = useAnalytics();
+
+  const handleMapsClick = (locationName: string, mapsUrl: string) => {
+    trackEvent('location_click', {
+      location_name: locationName,
+      action: 'open_maps'
+    });
+    window.open(mapsUrl, "_blank");
+  };
+
+  const handleWhatsAppClick = (locationName: string, whatsappNumber: string) => {
+    trackEvent('whatsapp_click', {
+      section: 'locations',
+      location_name: locationName
+    });
+    const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
+    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
+  };
+
   return (
     <section id="lojas" className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -56,10 +76,7 @@ export const Locations = () => {
                     variant="whatsapp"
                     size="sm"
                     className="w-full"
-                    onClick={() => {
-                      const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
-                      window.open(`https://wa.me/${location.whatsapp}?text=${message}`, "_blank");
-                    }}
+                    onClick={() => handleWhatsAppClick(location.name, location.whatsapp)}
                   >
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Falar com a {location.name}
@@ -69,7 +86,7 @@ export const Locations = () => {
                     variant="outline"
                     size="sm"
                     className="w-full"
-                    onClick={() => window.open(location.maps, "_blank")}
+                    onClick={() => handleMapsClick(location.name, location.maps)}
                   >
                     <Navigation className="mr-2 h-4 w-4" />
                     Ver no Google Maps

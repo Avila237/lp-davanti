@@ -1,17 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Navigation } from "lucide-react";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 export const Footer = () => {
+  const { trackEvent } = useAnalytics();
+
   const handleWhatsApp = () => {
+    trackEvent('whatsapp_click', {
+      section: 'footer',
+      button_text: 'WhatsApp'
+    });
     const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
     window.open(`https://wa.me/5555991068376?text=${message}`, "_blank");
   };
 
   const handleCall = () => {
+    trackEvent('phone_call', {
+      section: 'footer',
+      button_text: 'Ligar'
+    });
     window.location.href = "tel:+5555991068376";
   };
 
   const handleMaps = () => {
+    trackEvent('location_click', {
+      section: 'footer',
+      action: 'open_maps'
+    });
     window.open("https://maps.google.com/?q=Rua+Quinze+de+Novembro,+197,+Ijuí", "_blank");
   };
 

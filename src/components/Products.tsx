@@ -5,6 +5,7 @@ import oculosGrau from "@/assets/oculos-grau.jpg";
 import oculosSol from "@/assets/oculos-sol.jpg";
 import relogios from "@/assets/relogios.jpg";
 import acessorios from "@/assets/acessorios.jpg";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 const products = [
   {
@@ -52,7 +53,13 @@ const products = [
 ];
 
 export const Products = () => {
-  const handleWhatsApp = () => {
+  const { trackEvent } = useAnalytics();
+
+  const handleWhatsApp = (productName: string) => {
+    trackEvent('product_interest', {
+      product_name: productName,
+      action: 'whatsapp_click'
+    });
     window.open("https://wa.me/5555991372807", "_blank");
   };
 
@@ -90,7 +97,7 @@ export const Products = () => {
                   variant="whatsapp" 
                   size="sm" 
                   className="w-full"
-                  onClick={handleWhatsApp}
+                  onClick={() => handleWhatsApp(product.title)}
                 >
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Ver opções
