@@ -51,7 +51,7 @@ export const Locations = () => {
                   <p className="text-foreground font-semibold">📱 {location.phone}</p>
                 </div>
                 
-                <div className="flex flex-col gap-2 mt-auto">
+                <div className="flex flex-col gap-2 mt-auto pt-6">
                   <Button
                     variant="whatsapp"
                     size="sm"
