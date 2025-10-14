@@ -57,10 +57,10 @@ export const Products = () => {
   };
 
   return (
-    <section id="produtos" className="py-20 bg-background">
+    <section id="produtos" className="py-12 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Seu novo visual começa com o par perfeito
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -69,22 +69,22 @@ export const Products = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product, index) => (
             <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth overflow-hidden group">
-              <div className="relative h-64 overflow-hidden">
+              <div className="relative h-48 overflow-hidden">
                 <img 
                   src={product.image} 
                   alt={product.title}
                   className="w-full h-full object-cover transition-smooth group-hover:scale-110"
                 />
-                <div className="absolute top-4 left-4 text-4xl">{product.icon}</div>
+                <div className="absolute top-3 left-3 text-3xl">{product.icon}</div>
               </div>
-              <CardHeader>
+              <CardHeader className="p-4">
                 <CardTitle className="text-xl">{product.title}</CardTitle>
                 <CardDescription className="text-sm">{product.description}</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 pt-0">
                 <p className="text-secondary font-bold mb-4">{product.price}</p>
                 <Button 
                   variant="whatsapp" 
