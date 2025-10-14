@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Store, Eye, CreditCard, Wrench, Star, Award } from "lucide-react";
-import emporioArmaniLogo from "@/assets/brands/emporio-armani.png";
+import emporioArmaniLogo from "@/assets/brands/emporio-armani.jpg";
 import dieselLogo from "@/assets/brands/diesel.png";
 import montBlancLogo from "@/assets/brands/mont-blanc.png";
 import offWhiteLogo from "@/assets/brands/off-white.png";
@@ -129,17 +129,17 @@ export const Benefits = () => {
                   </p>
                 </header>
                 
-                <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="grid grid-cols-2 gap-6 mt-6">
                   {exclusiveBrands.watches.map((brand, index) => (
                     <div 
                       key={index}
-                      className="bg-background rounded-lg p-4 flex items-center justify-center hover:scale-105 transition-smooth shadow-sm"
+                      className="bg-white rounded-lg p-6 flex items-center justify-center hover:scale-105 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 shadow-md border border-gray-100"
                       aria-label={brand.alt}
                     >
                       <img 
                         src={brand.logo} 
                         alt={brand.alt}
-                        className="w-full h-auto object-contain max-h-16"
+                        className="w-full h-auto object-contain max-h-24 min-h-20"
                         loading="lazy"
                       />
                     </div>
@@ -164,11 +164,11 @@ export const Benefits = () => {
                   </p>
                 </header>
                 
-                <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="grid grid-cols-2 gap-6 mt-6">
                   {exclusiveBrands.eyewear.map((brand, index) => (
                     <div 
                       key={index}
-                      className={`bg-background rounded-lg p-4 flex items-center justify-center hover:scale-105 transition-smooth shadow-sm ${
+                      className={`bg-white rounded-lg p-6 flex items-center justify-center hover:scale-105 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 shadow-md border border-gray-100 ${
                         index === 2 ? 'col-span-2' : ''
                       }`}
                       aria-label={brand.alt}
@@ -176,7 +176,7 @@ export const Benefits = () => {
                       <img 
                         src={brand.logo} 
                         alt={brand.alt}
-                        className="w-full h-auto object-contain max-h-16"
+                        className="w-full h-auto object-contain max-h-24 min-h-20"
                         loading="lazy"
                       />
                     </div>
