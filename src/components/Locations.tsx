@@ -8,21 +8,21 @@ const locations = [
     address: "Rua Quinze de Novembro, 197 – Centro, Ijuí – RS, 98700-000",
     phone: "(55) 99137-2807",
     whatsapp: "5555991372807",
-    maps: "https://maps.google.com/?q=Rua+Quinze+de+Novembro,+197,+Ijuí",
+    maps: "https://share.google/Youse114as0PB994r",
   },
   {
     name: "Loja 2",
     address: "Rua 14 de Julho, 173 – Centro, Ijuí – RS, 98700-000",
     phone: "(55) 99106-8376",
     whatsapp: "5555991068376",
-    maps: "https://maps.google.com/?q=Rua+14+de+Julho,+173,+Ijuí",
+    maps: "https://share.google/7vrMA2wIBDYy8v8ji",
   },
   {
     name: "Loja 3",
     address: "Rua José Bonifácio, 239 – Centro, Ijuí – RS, 98700-000",
     phone: "(55) 99719-6834",
     whatsapp: "5555997196834",
-    maps: "https://maps.google.com/?q=Rua+José+Bonifácio,+239,+Ijuí",
+    maps: "https://share.google/1UExsdW1H8jRJIyJp",
   },
 ];
 
@@ -66,7 +66,7 @@ export const Locations = () => {
                     variant="outline"
                     size="sm"
                     className="w-full"
-                    onClick={() => window.open("https://share.google/1UExsdW1H8jRJIyJp", "_blank")}
+                    onClick={() => window.open(location.maps, "_blank")}
                   >
                     <Navigation className="mr-2 h-4 w-4" />
                     Ver no Google Maps
