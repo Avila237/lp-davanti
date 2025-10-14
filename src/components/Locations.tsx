@@ -36,20 +36,22 @@ export const Locations = () => {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8 items-stretch">
           {locations.map((location, index) => (
-            <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth">
+            <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <MapPin className="h-6 w-6 text-secondary" />
                   {location.name}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground text-sm leading-relaxed">{location.address}</p>
-                <p className="text-foreground font-semibold">📱 {location.phone}</p>
+              <CardContent className="flex flex-col flex-grow">
+                <div className="flex-grow space-y-4">
+                  <p className="text-muted-foreground text-sm leading-relaxed">{location.address}</p>
+                  <p className="text-foreground font-semibold">📱 {location.phone}</p>
+                </div>
                 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mt-auto">
                   <Button
                     variant="whatsapp"
                     size="sm"
