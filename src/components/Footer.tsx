@@ -3,7 +3,7 @@ import { MessageCircle, Phone, Navigation } from "lucide-react";
 
 export const Footer = () => {
   const handleWhatsApp = () => {
-    window.open("https://wa.me/5555991372807", "_blank");
+    window.open("https://wa.me/5555991068376", "_blank");
   };
 
   const handleCall = () => {
