@@ -8,7 +8,7 @@ export const SpecialOffer = () => {
   };
 
   const handleCall = () => {
-    window.location.href = "tel:+5555991372807";
+    window.location.href = "tel:+5555991068376";
   };
 
   return (
