@@ -3,7 +3,8 @@ import { MessageCircle, Phone, Clock } from "lucide-react";
 
 export const SpecialOffer = () => {
   const handleWhatsApp = () => {
-    window.open("https://wa.me/5555991372807", "_blank");
+    const message = encodeURIComponent("Olá, vim pelo site e gostaria de aproveitar meus 15% de desconto na primeira compra!");
+    window.open(`https://wa.me/5555991068376?text=${message}`, "_blank");
   };
 
   const handleCall = () => {
