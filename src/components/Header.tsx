@@ -7,8 +7,8 @@ import logo from "@/assets/logo-davanti.png";
 const menuItems = [
   { label: "Início", href: "#inicio" },
   { label: "Produtos", href: "#produtos" },
-  { label: "Exclusivos", href: "#exclusivos" },
   { label: "Diferenciais", href: "#diferenciais" },
+  { label: "Exclusivos", href: "#exclusivos" },
   { label: "Lojas", href: "#lojas" },
   { label: "Contato", href: "#contato" },
 ];
@@ -37,7 +37,14 @@ export const Header = () => {
     setIsOpen(false);
     const element = document.querySelector(href);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
     }
   };
 
