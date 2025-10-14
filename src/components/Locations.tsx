@@ -56,7 +56,10 @@ export const Locations = () => {
                     variant="whatsapp"
                     size="sm"
                     className="w-full"
-                    onClick={() => window.open(`https://wa.me/${location.whatsapp}`, "_blank")}
+                    onClick={() => {
+                      const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
+                      window.open(`https://wa.me/${location.whatsapp}?text=${message}`, "_blank");
+                    }}
                   >
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Falar com a {location.name}
