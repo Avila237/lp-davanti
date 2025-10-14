@@ -37,7 +37,7 @@ export const SpecialOffer = () => {
 
           <div className="flex items-center justify-center gap-2 mb-10 text-secondary">
             <Clock className="h-5 w-5" />
-            <p className="text-lg font-semibold">Oferta válida até domingo!</p>
+            <p className="text-lg font-semibold">Oferta válida para primeira compra, não cumulativo com outros descontos.</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
