@@ -23,8 +23,8 @@ export const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-20 text-center max-w-5xl">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in">
+      <div className="relative z-10 container mx-auto px-4 py-12 md:py-20 text-center max-w-5xl">
+        <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in">
           Encontre seus óculos de grau, solares e acessórios de luxo na{" "}
           <span className="text-secondary">
             Óptica Davanti
@@ -32,16 +32,16 @@ export const Hero = () => {
           – Ijuí
         </h1>
         
-        <p className="text-lg md:text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-base md:text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
           Mais de 10 anos de tradição em Ijuí, oferecendo atendimento personalizado, 
           as melhores marcas e condições exclusivas.
         </p>
 
         <Button 
           variant="whatsapp" 
-          size="xl"
+          size="lg"
           onClick={handleWhatsApp}
-          className="animate-pulse-slow"
+          className="animate-pulse-slow md:h-14 md:px-10 md:text-lg"
         >
           <MessageCircle className="mr-2 h-5 w-5" />
           Conversar no WhatsApp

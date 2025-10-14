@@ -16,13 +16,13 @@ export const Footer = () => {
   };
 
   return (
-    <footer id="contato" className="py-20 gradient-hero">
+    <footer id="contato" className="py-12 md:py-20 gradient-hero">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
             Seus novos óculos estão a um clique de distância
           </h2>
-          <p className="text-xl text-white/90 mb-10">
+          <p className="text-base md:text-xl text-white/90 mb-10">
             Descubra o padrão Davanti e veja o mundo com mais estilo e conforto.
           </p>
 

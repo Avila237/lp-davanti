@@ -32,13 +32,13 @@ export const Testimonials = () => {
   };
 
   return (
-    <section className="py-20 gradient-subtle">
+    <section className="py-12 md:py-20 gradient-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Excelência, tradição e confiança em cada atendimento
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             A Óptica Davanti é referência em Ijuí quando o assunto é visão, estilo e atendimento humanizado. 
             Com três lojas no centro da cidade, oferecemos tecnologia de ponta em lentes, armações das melhores 
             marcas do mercado e uma equipe que entende o que combina com você.
@@ -46,7 +46,7 @@ export const Testimonials = () => {
         </div>
 
         {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {testimonials.map((testimonial, index) => (
             <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth border-border/50">
               <CardContent className="pt-6">
@@ -55,15 +55,15 @@ export const Testimonials = () => {
                     <Star key={i} className="h-5 w-5 fill-secondary text-secondary" />
                   ))}
                 </div>
-                <p className="text-muted-foreground mb-4 italic">"{testimonial.text}"</p>
-                <p className="font-semibold text-foreground">- {testimonial.name}</p>
+                <p className="text-sm md:text-base text-muted-foreground mb-4 italic">"{testimonial.text}"</p>
+                <p className="text-sm md:text-base font-semibold text-foreground">- {testimonial.name}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Guarantees */}
-        <div className="grid md:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
           {guarantees.map((item, index) => {
             const Icon = item.icon;
             return (

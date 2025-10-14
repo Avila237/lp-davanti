@@ -28,19 +28,19 @@ const locations = [
 
 export const Locations = () => {
   return (
-    <section id="lojas" className="py-20 bg-background">
+    <section id="lojas" className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Três lojas Davanti para melhor atender você em Ijuí
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
           {locations.map((location, index) => (
             <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth h-full flex flex-col">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-2xl">
+                <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
                   <MapPin className="h-6 w-6 text-secondary" />
                   {location.name}
                 </CardTitle>

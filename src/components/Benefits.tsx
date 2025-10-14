@@ -73,15 +73,15 @@ export const Benefits = () => {
   };
 
   return (
-    <section id="diferenciais" className="py-20 gradient-subtle">
+    <section id="diferenciais" className="py-12 md:py-20 gradient-subtle">
       <div className="container mx-auto px-4">
         <header className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Por que escolher a Óptica Davanti?
           </h2>
         </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (
@@ -102,17 +102,17 @@ export const Benefits = () => {
           <header className="text-center mb-12">
             <div className="inline-flex items-center gap-2 mb-4">
               <Award className="h-8 w-8 text-secondary" />
-              <h3 className="text-3xl md:text-4xl font-bold text-foreground">
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
                 Marcas Exclusivas de Luxo em Ijuí
               </h3>
             </div>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
               Oferecemos as marcas mais prestigiadas do mundo em relógios e óculos, 
               com modelos exclusivos disponíveis apenas na Óptica Davanti.
             </p>
           </header>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Watches Category */}
             <Card className="shadow-elegant hover:shadow-glow transition-smooth overflow-hidden">
               <CardContent className="p-8">
@@ -120,7 +120,7 @@ export const Benefits = () => {
                   <div className="inline-block px-4 py-1 rounded-full gradient-accent text-primary mb-4">
                     <span className="font-semibold text-sm">Exclusivo</span>
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground mb-3">
+                  <h4 className="text-xl md:text-2xl font-bold text-foreground mb-3">
                     Relógios de Luxo
                   </h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
@@ -129,7 +129,7 @@ export const Benefits = () => {
                   </p>
                 </header>
                 
-                <div className="grid grid-cols-2 gap-6 mt-6">
+                <div className="grid grid-cols-2 gap-4 md:gap-6 mt-6">
                   {exclusiveBrands.watches.map((brand, index) => (
                     <div 
                       key={index}
@@ -139,7 +139,7 @@ export const Benefits = () => {
                       <img 
                         src={brand.logo} 
                         alt={brand.alt}
-                        className="w-full h-auto object-contain max-h-24 min-h-20"
+                        className="w-full h-auto object-contain max-h-16 md:max-h-24 min-h-14 md:min-h-20"
                         loading="lazy"
                       />
                     </div>
@@ -155,7 +155,7 @@ export const Benefits = () => {
                   <div className="inline-block px-4 py-1 rounded-full gradient-accent text-primary mb-4">
                     <span className="font-semibold text-sm">Exclusivo</span>
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground mb-3">
+                  <h4 className="text-xl md:text-2xl font-bold text-foreground mb-3">
                     Óculos Premium
                   </h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
@@ -164,7 +164,7 @@ export const Benefits = () => {
                   </p>
                 </header>
                 
-                <div className="grid grid-cols-2 gap-6 mt-6">
+                <div className="grid grid-cols-2 gap-4 md:gap-6 mt-6">
                   {exclusiveBrands.eyewear.map((brand, index) => (
                     <div 
                       key={index}
@@ -176,7 +176,7 @@ export const Benefits = () => {
                       <img 
                         src={brand.logo} 
                         alt={brand.alt}
-                        className="w-full h-auto object-contain max-h-24 min-h-20"
+                        className="w-full h-auto object-contain max-h-16 md:max-h-24 min-h-14 md:min-h-20"
                         loading="lazy"
                       />
                     </div>

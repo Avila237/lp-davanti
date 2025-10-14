@@ -12,10 +12,10 @@ export const SpecialOffer = () => {
   };
 
   return (
-    <section className="py-20 gradient-hero relative overflow-hidden">
+    <section className="py-12 md:py-20 gradient-hero relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+      <div className="absolute top-0 right-0 w-48 h-48 md:w-96 md:h-96 bg-secondary/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 md:w-96 md:h-96 bg-secondary/10 rounded-full blur-3xl" />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
@@ -26,18 +26,18 @@ export const SpecialOffer = () => {
             </p>
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
             Ganhe 15% de desconto na sua primeira compra!
           </h2>
 
-          <p className="text-xl text-white/90 mb-8 leading-relaxed">
+          <p className="text-base md:text-xl text-white/90 mb-8 leading-relaxed">
             Fale conosco pelo WhatsApp e aproveite 15% de desconto em sua primeira compra. 
             Escolha o modelo ideal com a ajuda dos nossos consultores — sem compromisso.
           </p>
 
           <div className="flex items-center justify-center gap-2 mb-10 text-secondary">
             <Clock className="h-5 w-5" />
-            <p className="text-lg font-semibold">Oferta válida para primeira compra, não cumulativo com outros descontos.</p>
+            <p className="text-sm md:text-base font-semibold">Oferta válida para primeira compra, não cumulativo com outros descontos.</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
