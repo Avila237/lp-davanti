@@ -32,7 +32,8 @@ export const Header = () => {
       section: 'header',
       button_text: 'WhatsApp'
     });
-    window.open("https://wa.me/5555991372807", "_blank");
+    const message = encodeURIComponent("Olá, vim pelo site e gostaria de informações");
+    window.open(`https://wa.me/5555991372807?text=${message}`, "_blank");
   };
 
   const handleCall = () => {
