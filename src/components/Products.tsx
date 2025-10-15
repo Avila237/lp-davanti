@@ -78,7 +78,7 @@ export const Products = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product, index) => (
-            <Card key={index} className="shadow-elegant hover:shadow-glow transition-smooth overflow-hidden group">
+            <Card key={index} className="flex flex-col shadow-elegant hover:shadow-glow transition-smooth overflow-hidden group h-full">
               <div className="relative h-48 overflow-hidden">
                 <img 
                   src={product.image} 
@@ -87,11 +87,11 @@ export const Products = () => {
                 />
                 <div className="absolute top-3 left-3 text-3xl">{product.icon}</div>
               </div>
-              <CardHeader className="p-4">
-                <CardTitle className="text-xl">{product.title}</CardTitle>
-                <CardDescription className="text-sm">{product.description}</CardDescription>
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-xl mb-2">{product.title}</CardTitle>
+                <CardDescription className="text-sm min-h-[3rem]">{product.description}</CardDescription>
               </CardHeader>
-              <CardContent className="p-4 pt-0">
+              <CardContent className="p-4 pt-0 flex flex-col justify-end flex-grow">
                 <p className="text-secondary font-bold mb-4">{product.price}</p>
                 <Button 
                   variant="whatsapp" 
