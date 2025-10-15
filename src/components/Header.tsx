@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import logo from "@/assets/logo-davanti-wordmark.png";
+import logo from "@/assets/logo-davanti-laranja.png";
 import { useAnalytics } from "@/hooks/use-analytics";
 
 const menuItems = [
@@ -83,7 +83,7 @@ export const Header = () => {
             }}
             className="flex items-center gap-3 hover:opacity-80 transition-smooth"
           >
-            <img src={logo} alt="Logo Óptica Davanti" className="h-10 md:h-12 object-contain" />
+            <img src={logo} alt="Logo Óptica Davanti" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
             <span className="text-xl font-bold text-white hidden sm:block">
               Óptica Davanti
             </span>
