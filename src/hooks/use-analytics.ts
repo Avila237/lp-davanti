@@ -1,5 +1,5 @@
 /**
- * Hook for tracking Google Analytics events
+ * Hook for tracking events via Google Tag Manager
  * Usage: const { trackEvent } = useAnalytics();
  */
 
@@ -8,14 +8,18 @@ export const useAnalytics = () => {
     eventName: string,
     eventParams?: Record<string, string | number | boolean>
   ) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', eventName, eventParams);
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
+        event: eventName,
+        ...eventParams,
+      });
     }
   };
 
   const trackPageView = (url: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('config', 'G-VBHZZMCJTZ', {
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
+        event: 'page_view',
         page_path: url,
       });
     }
