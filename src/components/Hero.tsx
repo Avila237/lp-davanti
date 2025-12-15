@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
-import heroImage from "@/assets/hero-optica.jpg";
+import heroImage from "@/assets/hero-loja-davanti.jpg";
 import { useAnalytics } from "@/hooks/use-analytics";
 export const Hero = () => {
   const {
