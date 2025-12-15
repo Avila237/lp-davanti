@@ -23,7 +23,7 @@ export const SpecialOffer = () => {
   };
 
   return (
-    <section className="py-12 md:py-20 gradient-hero relative overflow-hidden">
+    <section id="oferta" className="py-12 md:py-20 gradient-hero relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 right-0 w-48 h-48 md:w-96 md:h-96 bg-secondary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-48 h-48 md:w-96 md:h-96 bg-secondary/10 rounded-full blur-3xl" />
