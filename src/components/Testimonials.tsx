@@ -39,7 +39,7 @@ export const Testimonials = () => {
   };
 
   return (
-    <section className="py-12 md:py-20 gradient-subtle">
+    <section id="depoimentos" className="py-12 md:py-20 gradient-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
