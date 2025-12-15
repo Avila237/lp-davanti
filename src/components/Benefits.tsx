@@ -57,7 +57,7 @@ const exclusiveBrands = {
     {
       name: "Off White",
       logo: offWhiteLogo,
-      alt: "Óculos Off White - Marca de luxo exclusiva na Óptica Davanti Ijuí"
+      alt: "Óculos Off White - Marca premium exclusiva na Óptica Davanti Ijuí"
     },
     {
       name: "Bottega Veneta",
@@ -110,7 +110,7 @@ export const Benefits = () => {
             <div className="inline-flex items-center gap-2 mb-4">
               <Award className="h-8 w-8 text-secondary" />
               <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
-                Marcas Exclusivas de Luxo em Ijuí
+                Marcas Exclusivas e Premium em Ijuí
               </h3>
             </div>
             <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -128,7 +128,7 @@ export const Benefits = () => {
                     <span className="font-semibold text-sm">Exclusivo</span>
                   </div>
                   <h4 className="text-xl md:text-2xl font-bold text-foreground mb-3">
-                    Relógios de Luxo
+                    Relógios Premium
                   </h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     A sofisticação italiana da Emporio Armani e o design robusto da Diesel, 
