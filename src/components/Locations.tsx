@@ -20,7 +20,7 @@ const locations = [
   },
   {
     name: "Loja 3",
-    address: "Rua José Bonifácio, 239 – Centro, Ijuí – RS, 98700-000",
+    address: "Rua José Bonifácio, 243 – Sala A – Centro, Ijuí – RS, 98700-000",
     phone: "(55) 99719-6834",
     whatsapp: "5555997196834",
     maps: "https://share.google/1UExsdW1H8jRJIyJp",
