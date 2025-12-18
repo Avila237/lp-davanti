@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, MessageCircle, Navigation } from "lucide-react";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { ABTestCTA } from "./ABTestCTA";
 
 const locations = [
   {
@@ -38,15 +39,6 @@ export const Locations = () => {
     window.open(mapsUrl, "_blank");
   };
 
-  const handleWhatsAppClick = (locationName: string, whatsappNumber: string) => {
-    trackEvent('whatsapp_click', {
-      section: 'locations',
-      location_name: locationName
-    });
-    const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
-  };
-
   return (
     <section id="lojas" className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -72,15 +64,16 @@ export const Locations = () => {
                 </div>
                 
                 <div className="flex flex-col gap-2 mt-auto pt-6">
-                  <Button
+                  <ABTestCTA
+                    section={`locations_${location.name.toLowerCase().replace(/\s+/g, '_')}`}
+                    buttonText={`Falar com a ${location.name}`}
+                    whatsappNumber={location.whatsapp}
+                    whatsappMessage="Olá, vim pelo site e gostaria de ajuda."
                     variant="whatsapp"
                     size="sm"
                     className="w-full"
-                    onClick={() => handleWhatsAppClick(location.name, location.whatsapp)}
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Falar com a {location.name}
-                  </Button>
+                    icon={<MessageCircle className="h-4 w-4" />}
+                  />
                   
                   <Button
                     variant="outline"

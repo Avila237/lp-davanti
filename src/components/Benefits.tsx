@@ -1,12 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { MessageCircle, Store, Eye, CreditCard, Wrench, Star, Award } from "lucide-react";
 import emporioArmaniLogo from "@/assets/brands/emporio-armani.jpg";
 import dieselLogo from "@/assets/brands/diesel.png";
 import montBlancLogo from "@/assets/brands/mont-blanc.png";
 import offWhiteLogo from "@/assets/brands/off-white.png";
 import bottegaVenetaLogo from "@/assets/brands/bottega-veneta.png";
-import { useAnalytics } from "@/hooks/use-analytics";
+import { ABTestCTA } from "./ABTestCTA";
 
 const benefits = [
   {
@@ -68,17 +67,6 @@ const exclusiveBrands = {
 };
 
 export const Benefits = () => {
-  const { trackEvent } = useAnalytics();
-
-  const handleWhatsApp = () => {
-    trackEvent('whatsapp_click', {
-      section: 'benefits',
-      button_text: 'Falar com nossa equipe'
-    });
-    const message = encodeURIComponent("Olá, vim pelo site e gostaria de olhar alguns exclusivos");
-    window.open(`https://wa.me/5555991068376?text=${message}`, "_blank");
-  };
-
   return (
     <section id="diferenciais" className="py-12 md:py-20 gradient-subtle">
       <div className="container mx-auto px-4">
@@ -195,15 +183,15 @@ export const Benefits = () => {
         </article>
 
         <div className="text-center">
-          <Button 
-            variant="whatsapp" 
+          <ABTestCTA
+            section="benefits"
+            buttonText="Falar com nossa equipe"
+            whatsappNumber="5555991068376"
+            whatsappMessage="Olá, vim pelo site e gostaria de olhar alguns exclusivos"
+            variant="whatsapp"
             size="lg"
-            onClick={handleWhatsApp}
-            aria-label="Entrar em contato via WhatsApp"
-          >
-            <MessageCircle className="mr-2 h-5 w-5" />
-            Falar com nossa equipe
-          </Button>
+            icon={<MessageCircle className="h-5 w-5" />}
+          />
         </div>
       </div>
     </section>

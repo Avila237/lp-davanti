@@ -1,18 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Navigation } from "lucide-react";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { ABTestCTA } from "./ABTestCTA";
 
 export const Footer = () => {
   const { trackEvent } = useAnalytics();
-
-  const handleWhatsApp = () => {
-    trackEvent('whatsapp_click', {
-      section: 'footer',
-      button_text: 'WhatsApp'
-    });
-    const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
-    window.open(`https://wa.me/5555991068376?text=${message}`, "_blank");
-  };
 
   const handleCall = () => {
     trackEvent('phone_call', {
@@ -42,15 +34,16 @@ export const Footer = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button 
-              variant="secondary" 
+            <ABTestCTA
+              section="footer"
+              buttonText="WhatsApp"
+              whatsappNumber="5555991068376"
+              whatsappMessage="Olá, vim pelo site e gostaria de ajuda."
+              variant="secondary"
               size="lg"
-              onClick={handleWhatsApp}
               className="shadow-glow"
-            >
-              <MessageCircle className="mr-2 h-5 w-5" />
-              WhatsApp
-            </Button>
+              icon={<MessageCircle className="h-5 w-5" />}
+            />
 
             <Button 
               variant="outline" 

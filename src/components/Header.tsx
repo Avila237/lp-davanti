@@ -4,6 +4,7 @@ import { MessageCircle, Phone, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import logo from "@/assets/logo-davanti-laranja.png";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { ABTestCTA } from "./ABTestCTA";
 
 const menuItems = [
   { label: "Início", href: "#inicio" },
@@ -26,15 +27,6 @@ export const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const handleWhatsApp = () => {
-    trackEvent('whatsapp_click', {
-      section: 'header',
-      button_text: 'WhatsApp'
-    });
-    const message = encodeURIComponent("Olá, vim pelo site e gostaria de informações");
-    window.open(`https://wa.me/5555991372807?text=${message}`, "_blank");
-  };
 
   const handleCall = () => {
     trackEvent('phone_call', {
@@ -109,14 +101,15 @@ export const Header = () => {
 
           {/* Botões Desktop */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button
+            <ABTestCTA
+              section="header"
+              buttonText="WhatsApp"
+              whatsappNumber="5555991372807"
+              whatsappMessage="Olá, vim pelo site e gostaria de informações"
               variant="whatsapp"
               size="sm"
-              onClick={handleWhatsApp}
-            >
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp
-            </Button>
+              icon={<MessageCircle className="h-4 w-4" />}
+            />
             <Button
               variant="outline"
               size="sm"
@@ -130,13 +123,16 @@ export const Header = () => {
 
           {/* Menu Mobile */}
           <div className="flex lg:hidden items-center gap-2">
-            <Button
+            <ABTestCTA
+              section="header_mobile"
+              buttonText=""
+              whatsappNumber="5555991372807"
+              whatsappMessage="Olá, vim pelo site e gostaria de informações"
               variant="whatsapp"
               size="sm"
-              onClick={handleWhatsApp}
-            >
-              <MessageCircle className="h-4 w-4" />
-            </Button>
+              icon={<MessageCircle className="h-4 w-4" />}
+              showIcon={true}
+            />
 
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -164,14 +160,15 @@ export const Header = () => {
                     </a>
                   ))}
                   <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-white/10">
-                    <Button
+                    <ABTestCTA
+                      section="header_mobile_menu"
+                      buttonText="WhatsApp"
+                      whatsappNumber="5555991372807"
+                      whatsappMessage="Olá, vim pelo site e gostaria de informações"
                       variant="whatsapp"
-                      onClick={handleWhatsApp}
                       className="w-full"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      WhatsApp
-                    </Button>
+                      icon={<MessageCircle className="h-4 w-4" />}
+                    />
                     <Button
                       variant="outline"
                       onClick={handleCall}
