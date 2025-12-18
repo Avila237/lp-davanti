@@ -1,8 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Shield, Award, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
-import { useAnalytics } from "@/hooks/use-analytics";
+import { Star, Shield, Award, Clock, MessageCircle } from "lucide-react";
+import { ABTestCTA } from "./ABTestCTA";
 
 const testimonials = [
   {
@@ -27,17 +25,6 @@ const guarantees = [
 ];
 
 export const Testimonials = () => {
-  const { trackEvent } = useAnalytics();
-
-  const handleWhatsApp = () => {
-    trackEvent('whatsapp_click', {
-      section: 'testimonials',
-      button_text: 'Falar com um consultor agora'
-    });
-    const message = encodeURIComponent("Olá, vim pelo site e gostaria de ajuda.");
-    window.open(`https://wa.me/5555991372807?text=${message}`, "_blank");
-  };
-
   return (
     <section id="depoimentos" className="py-12 md:py-20 gradient-subtle">
       <div className="container mx-auto px-4">
@@ -83,14 +70,15 @@ export const Testimonials = () => {
         </div>
 
         <div className="text-center">
-          <Button 
-            variant="whatsapp" 
+          <ABTestCTA
+            section="testimonials"
+            buttonText="Falar com um consultor agora"
+            whatsappNumber="5555991372807"
+            whatsappMessage="Olá, vim pelo site e gostaria de ajuda."
+            variant="whatsapp"
             size="lg"
-            onClick={handleWhatsApp}
-          >
-            <MessageCircle className="mr-2 h-5 w-5" />
-            Falar com um consultor agora
-          </Button>
+            icon={<MessageCircle className="h-5 w-5" />}
+          />
         </div>
       </div>
     </section>

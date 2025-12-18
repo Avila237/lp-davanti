@@ -1,18 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Clock } from "lucide-react";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { ABTestCTA } from "./ABTestCTA";
 
 export const SpecialOffer = () => {
   const { trackEvent } = useAnalytics();
-
-  const handleWhatsApp = () => {
-    trackEvent('whatsapp_click', {
-      section: 'special_offer',
-      button_text: 'Quero meu desconto'
-    });
-    const message = encodeURIComponent("Olá, vim pelo site e gostaria de aproveitar meus 15% de desconto na primeira compra!");
-    window.open(`https://wa.me/5555991068376?text=${message}`, "_blank");
-  };
 
   const handleCall = () => {
     trackEvent('phone_call', {
@@ -52,15 +44,16 @@ export const SpecialOffer = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              variant="secondary" 
+            <ABTestCTA
+              section="special_offer"
+              buttonText="Quero meu desconto"
+              whatsappNumber="5555991068376"
+              whatsappMessage="Olá, vim pelo site e gostaria de aproveitar meus 15% de desconto na primeira compra!"
+              variant="secondary"
               size="xl"
-              onClick={handleWhatsApp}
               className="shadow-glow"
-            >
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Quero meu desconto
-            </Button>
+              icon={<MessageCircle className="h-5 w-5" />}
+            />
 
             <Button 
               variant="outline" 

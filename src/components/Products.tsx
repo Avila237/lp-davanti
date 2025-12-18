@@ -1,11 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import oculosGrau from "@/assets/oculos-grau.jpg";
 import oculosSol from "@/assets/oculos-sol.jpg";
 import relogios from "@/assets/relogios.jpg";
 import acessorios from "@/assets/acessorios.jpg";
-import { useAnalytics } from "@/hooks/use-analytics";
+import { ABTestCTA } from "./ABTestCTA";
 
 const products = [
   {
@@ -53,16 +52,6 @@ const products = [
 ];
 
 export const Products = () => {
-  const { trackEvent } = useAnalytics();
-
-  const handleWhatsApp = (productName: string) => {
-    trackEvent('product_interest', {
-      product_name: productName,
-      action: 'whatsapp_click'
-    });
-    window.open("https://wa.me/5555991372807", "_blank");
-  };
-
   return (
     <section id="produtos" className="py-12 bg-background">
       <div className="container mx-auto px-4">
@@ -93,15 +82,15 @@ export const Products = () => {
               </CardHeader>
               <CardContent className="p-4 pt-0 flex flex-col justify-end flex-grow">
                 <p className="text-secondary font-bold mb-4">{product.price}</p>
-                <Button 
-                  variant="whatsapp" 
-                  size="sm" 
+                <ABTestCTA
+                  section={`products_${product.title.toLowerCase().replace(/\s+/g, '_')}`}
+                  buttonText="Ver opções"
+                  whatsappNumber="5555991372807"
+                  variant="whatsapp"
+                  size="sm"
                   className="w-full"
-                  onClick={() => handleWhatsApp(product.title)}
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Ver opções
-                </Button>
+                  icon={<MessageCircle className="h-4 w-4" />}
+                />
               </CardContent>
             </Card>
           ))}
