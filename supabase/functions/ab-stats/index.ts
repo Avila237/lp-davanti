@@ -6,29 +6,116 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiting for auth attempts
+const authAttempts = new Map<string, { count: number; blockedUntil: number }>();
+const MAX_ATTEMPTS = 5;
+const BLOCK_DURATION = 15 * 60 * 1000; // 15 minutes
+
+function getClientIP(req: Request): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+         req.headers.get("x-real-ip") || 
+         "unknown";
+}
+
+function checkAuthRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const record = authAttempts.get(ip);
+  
+  if (record && now < record.blockedUntil) {
+    return { allowed: false, retryAfter: Math.ceil((record.blockedUntil - now) / 1000) };
+  }
+  
+  return { allowed: true };
+}
+
+function recordFailedAttempt(ip: string): void {
+  const now = Date.now();
+  const record = authAttempts.get(ip);
+  
+  if (!record || now >= record.blockedUntil) {
+    authAttempts.set(ip, { count: 1, blockedUntil: 0 });
+    return;
+  }
+  
+  record.count++;
+  if (record.count >= MAX_ATTEMPTS) {
+    record.blockedUntil = now + BLOCK_DURATION;
+  }
+}
+
+function clearFailedAttempts(ip: string): void {
+  authAttempts.delete(ip);
+}
+
+// SHA256 hash function
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { password } = await req.json();
+    const clientIP = getClientIP(req);
     
-    // Valida senha contra o secret
-    const adminPassword = Deno.env.get("ADMIN_PASSWORD");
-    if (!adminPassword || password !== adminPassword) {
+    // Check rate limit
+    const rateCheck = checkAuthRateLimit(clientIP);
+    if (!rateCheck.allowed) {
       return new Response(
-        JSON.stringify({ error: "Senha inválida" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Too many attempts. Try again later." }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": String(rateCheck.retryAfter)
+          } 
+        }
       );
     }
 
-    // Cria cliente com service role para bypassar RLS
+    const { password_hash } = await req.json();
+    
+    if (!password_hash || typeof password_hash !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Invalid request" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Validate password hash against stored password
+    const adminPassword = Deno.env.get("ADMIN_PASSWORD");
+    if (!adminPassword) {
+      return new Response(
+        JSON.stringify({ error: "Authentication not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const expectedHash = await sha256(adminPassword);
+    
+    if (password_hash !== expectedHash) {
+      recordFailedAttempt(clientIP);
+      return new Response(
+        JSON.stringify({ error: "Invalid password" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Clear failed attempts on successful auth
+    clearFailedAttempts(clientIP);
+
+    // Create client with service role to bypass RLS
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Busca eventos dos últimos 60 dias
+    // Fetch events from last 60 days
     const sixtyDaysAgo = new Date();
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
@@ -39,11 +126,14 @@ serve(async (req) => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("[ab-stats] Erro ao buscar eventos:", error);
-      throw error;
+      console.error("[ab-stats] Query failed");
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch data" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Agrega os dados
+    // Aggregate data
     let whatsappClicks = 0;
     let formSubmits = 0;
     const bySection: Record<string, { whatsapp: number; form: number }> = {};
@@ -56,7 +146,7 @@ serve(async (req) => {
         formSubmits++;
       }
 
-      // Agrupa por seção
+      // Group by section
       const section = event.section || "unknown";
       if (!bySection[section]) {
         bySection[section] = { whatsapp: 0, form: 0 };
@@ -68,7 +158,7 @@ serve(async (req) => {
         bySection[section].form++;
       }
 
-      // Agrupa por data e hora
+      // Group by date and hour
       const eventDate = new Date(event.created_at);
       const dateKey = eventDate.toISOString().split('T')[0];
       const hour = eventDate.getUTCHours();
@@ -85,7 +175,7 @@ serve(async (req) => {
       }
     }
 
-    // Converte para array ordenado (mais recentes primeiro), limitado a 50
+    // Convert to sorted array (most recent first), limited to 50
     const byDatetimeArray = Object.entries(byDatetime)
       .map(([key, counts]) => {
         const [date, hour] = key.split('_');
@@ -110,9 +200,9 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("[ab-stats] Erro:", error);
+    console.error("[ab-stats] Request failed");
     return new Response(
-      JSON.stringify({ error: "Erro interno" }),
+      JSON.stringify({ error: "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

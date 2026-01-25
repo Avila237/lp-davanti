@@ -19,7 +19,7 @@ function validateInput(name: string, phone: string): { valid: boolean; error?: s
   return { valid: true };
 }
 
-// Grava evento de conversão no banco
+// Record A/B conversion event
 async function trackFormSubmit(section: string) {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -31,10 +31,8 @@ async function trackFormSubmit(section: string) {
       variant: "form",
       section: section || null,
     });
-
-    console.log("[submit-lead] Evento A/B registrado:", { section });
-  } catch (err) {
-    console.error("[submit-lead] Erro ao registrar evento A/B:", err);
+  } catch {
+    // Silently fail - analytics should not break core functionality
   }
 }
 
@@ -45,11 +43,9 @@ serve(async (req) => {
 
   try {
     const { name, phone, source, section } = await req.json();
-    console.log("[submit-lead] Recebido:", { name, phone, source, section });
 
     const validation = validateInput(name, phone);
     if (!validation.valid) {
-      console.log("[submit-lead] Validação falhou:", validation.error);
       return new Response(
         JSON.stringify({ success: false, error: validation.error }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -59,9 +55,7 @@ serve(async (req) => {
     const ISALES_TOKEN = Deno.env.get("ISALES_TOKEN");
 
     if (ISALES_TOKEN) {
-      console.log("[submit-lead] Enviando para Isales...");
-      
-      // Criar FormData conforme documentação Isales
+      // Create FormData as per Isales documentation
       const formData = new FormData();
       formData.append('e', ISALES_TOKEN);
       formData.append('redirect', '1');
@@ -73,16 +67,15 @@ serve(async (req) => {
         body: formData,
       });
 
-      console.log("[submit-lead] Resposta Isales - Status:", isalesResponse.status);
-      const responseText = await isalesResponse.text();
-      console.log("[submit-lead] Resposta Isales - Body:", responseText);
-
       if (!isalesResponse.ok) {
-        console.error("[submit-lead] Erro Isales:", isalesResponse.status, responseText);
-        throw new Error(`Isales API error: ${isalesResponse.status}`);
+        console.error("[submit-lead] External API error");
+        return new Response(
+          JSON.stringify({ success: false, error: "Failed to submit lead" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      // Grava evento de conversão A/B
+      // Record A/B conversion
       await trackFormSubmit(section);
 
       return new Response(
@@ -90,17 +83,8 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
-      // Modo de teste
-      console.log("[submit-lead] MODO TESTE - Token Isales não configurado");
-      console.log("[submit-lead] Lead recebido:", {
-        nome: name.trim(),
-        telefone: phone,
-        source: source || "Site Davanti",
-        section: section || "unknown",
-        timestamp: new Date().toISOString(),
-      });
-
-      // Grava evento de conversão A/B mesmo em modo teste
+      // Test mode - no Isales token configured
+      // Record A/B conversion even in test mode
       await trackFormSubmit(section);
 
       return new Response(
@@ -114,10 +98,9 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error("[submit-lead] Erro:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("[submit-lead] Request failed");
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ success: false, error: "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
