@@ -5,6 +5,26 @@ export type ABVariant = "whatsapp" | "form";
 
 const AB_STORAGE_KEY = "davanti_ab_variant";
 
+// HMAC-SHA256 signature for secure event tracking
+async function generateSignature(payload: string): Promise<string> {
+  // Use the anon key as HMAC secret (available to client, verified server-side)
+  const secret = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+  
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+  return Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // Verifica se o visitante já tem uma variante atribuída, ou sorteia uma nova
 function getOrAssignVariant(): ABVariant {
   if (typeof window === "undefined") return "whatsapp";
@@ -21,14 +41,24 @@ function getOrAssignVariant(): ABVariant {
   return variant;
 }
 
-// Envia evento para o banco de dados via Edge Function
+// Envia evento para o banco de dados via Edge Function with HMAC signature
 async function trackEventToDatabase(eventType: "whatsapp_click" | "form_submit", variant: ABVariant, section?: string) {
   try {
+    const timestamp = Date.now();
+    const payload = `${eventType}:${variant}:${section || ""}:${timestamp}`;
+    const signature = await generateSignature(payload);
+    
     await supabase.functions.invoke("track-ab-event", {
-      body: { event_type: eventType, variant, section },
+      body: { 
+        event_type: eventType, 
+        variant, 
+        section,
+        timestamp,
+        signature
+      },
     });
-  } catch (err) {
-    console.error("[A/B Test] Erro ao gravar evento:", err);
+  } catch {
+    // Silently fail - analytics should not break user experience
   }
 }
 
@@ -60,7 +90,6 @@ export function useABTest() {
         event_category: 'ab_test',
         ...data,
       });
-      console.log(`[A/B Test] ${eventName}:`, { variant: currentVariant, ...data });
     }
   }, [variant]);
 
@@ -71,7 +100,7 @@ export function useABTest() {
     // Envia para GTM
     trackABEvent("ab_test_whatsapp_click", { section });
     
-    // Envia para banco de dados
+    // Envia para banco de dados with signature
     trackEventToDatabase("whatsapp_click", currentVariant, section);
   }, [variant, trackABEvent]);
 
