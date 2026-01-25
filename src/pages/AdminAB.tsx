@@ -28,14 +28,6 @@ const formatDate = (dateStr: string) => {
   return `${day}/${month}`;
 };
 
-// SHA256 hash function for client-side password hashing
-async function sha256(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
 export default function AdminAB() {
   const [password, setPassword] = useState("");
   const [stats, setStats] = useState<ABStats | null>(null);
@@ -52,11 +44,9 @@ export default function AdminAB() {
     setError("");
 
     try {
-      // Hash password client-side before sending
-      const passwordHash = await sha256(password);
-      
+      // Send password over HTTPS - server handles validation with constant-time comparison
       const { data, error: fnError } = await supabase.functions.invoke("ab-stats", {
-        body: { password_hash: passwordHash },
+        body: { password },
       });
 
       if (fnError) throw fnError;
@@ -68,8 +58,7 @@ export default function AdminAB() {
         setStats(data);
         setError("");
       }
-    } catch (err) {
-      console.error("Connection error");
+    } catch {
       setError("Erro ao conectar. Tente novamente.");
     } finally {
       setLoading(false);
@@ -105,6 +94,7 @@ export default function AdminAB() {
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Digite a senha de acesso"
+                  autoComplete="current-password"
                 />
               </div>
               <Button onClick={fetchStats} disabled={loading}>

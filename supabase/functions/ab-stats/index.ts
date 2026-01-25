@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,12 +48,22 @@ function clearFailedAttempts(ip: string): void {
   authAttempts.delete(ip);
 }
 
-// SHA256 hash function
-async function sha256(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+// Constant-time string comparison to prevent timing attacks
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    // Still do the comparison to maintain constant time
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ (b.charCodeAt(i % b.length) || 0);
+    }
+    return false;
+  }
+  
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 }
 
 serve(async (req) => {
@@ -79,16 +90,16 @@ serve(async (req) => {
       );
     }
 
-    const { password_hash } = await req.json();
+    const { password } = await req.json();
     
-    if (!password_hash || typeof password_hash !== "string") {
+    if (!password || typeof password !== "string") {
       return new Response(
         JSON.stringify({ error: "Invalid request" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    // Validate password hash against stored password
+    // Validate password against stored password using constant-time comparison
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
     if (!adminPassword) {
       return new Response(
@@ -97,9 +108,8 @@ serve(async (req) => {
       );
     }
     
-    const expectedHash = await sha256(adminPassword);
-    
-    if (password_hash !== expectedHash) {
+    // Use constant-time comparison to prevent timing attacks
+    if (!constantTimeEqual(password, adminPassword)) {
       recordFailedAttempt(clientIP);
       return new Response(
         JSON.stringify({ error: "Invalid password" }),
