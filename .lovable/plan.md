@@ -1,190 +1,175 @@
 
-## Dashboard de Conversoes A/B - Plano de Implementacao
 
-### Visao Geral
+## Tabela de Conversoes por Dia e Hora
 
-Criaremos um dashboard minimalista e seguro para visualizar as conversoes do teste A/B (WhatsApp vs Formulario). O dashboard sera protegido por senha simples e mostrara apenas os numeros essenciais.
+### Objetivo
 
----
-
-### Arquitetura de Seguranca
-
-```text
-+------------------+     +-------------------+     +------------------+
-|   /admin/ab      | --> |  Edge Function    | --> |   ab_events      |
-|   (Dashboard)    |     |  (valida senha)   |     |   (tabela)       |
-+------------------+     +-------------------+     +------------------+
-        |                        |
-        v                        v
-  Senha via input        ADMIN_PASSWORD
-  (nao armazenada)       (secret seguro)
-```
-
-- **Senha validada no servidor**: A senha nunca e verificada no frontend - a validacao acontece na Edge Function
-- **Secret seguro**: A senha de admin fica armazenada como secret no backend (nunca no codigo)
-- **Dados publicos**: A tabela armazena apenas contadores agregados, sem dados pessoais
+Adicionar uma tabela simples abaixo dos indicadores principais mostrando as conversoes agrupadas por data e hora, permitindo visualizar quando os usuarios mais convertem.
 
 ---
 
 ### O Que Sera Criado
 
-| Componente | Descricao |
-|------------|-----------|
-| Tabela `ab_events` | Armazena cada evento de conversao (tipo, variante, secao, timestamp) |
-| Edge Function `ab-stats` | Retorna estatisticas agregadas, validando senha |
-| Pagina `/admin/ab` | Dashboard minimalista com input de senha |
-| Atualizacao do `submit-lead` | Grava eventos na tabela ao receber leads |
+Uma tabela minimalista com as seguintes colunas:
+
+| Data | Hora | WhatsApp | Formulario |
+|------|------|----------|------------|
+| 25/01 | 14:00 | 3 | 2 |
+| 25/01 | 15:00 | 1 | 0 |
+| 24/01 | 10:00 | 2 | 1 |
 
 ---
 
-### Estrutura da Tabela
+### Alteracoes Necessarias
 
-```sql
-CREATE TABLE public.ab_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_type TEXT NOT NULL, -- 'whatsapp_click' ou 'form_submit'
-  variant TEXT NOT NULL,    -- 'whatsapp' ou 'form'
-  section TEXT,             -- 'hero', 'products', etc
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+#### 1. Edge Function `ab-stats`
 
--- RLS: Apenas leitura via service role (Edge Functions)
-ALTER TABLE public.ab_events ENABLE ROW LEVEL SECURITY;
+Adicionar uma nova agregacao `by_datetime` que agrupa eventos por dia e hora:
 
--- Politica: Ninguem le diretamente (apenas via Edge Function)
-CREATE POLICY "Deny all direct access" ON public.ab_events
-  FOR ALL USING (false);
-```
-
----
-
-### Edge Function: ab-stats
-
-```text
-POST /ab-stats
-Body: { "password": "senha-do-admin" }
-
-Resposta (se senha correta):
+```typescript
+// Nova estrutura de retorno
 {
-  "whatsapp_clicks": 45,
-  "form_submits": 38,
-  "by_section": {
-    "hero": { "whatsapp": 20, "form": 15 },
-    "products": { "whatsapp": 10, "form": 12 }
-  },
-  "period": "last_60_days"
+  whatsapp_clicks: 45,
+  form_submits: 38,
+  by_section: { ... },
+  by_datetime: [
+    { date: "2026-01-25", hour: 14, whatsapp: 3, form: 2 },
+    { date: "2026-01-25", hour: 15, whatsapp: 1, form: 0 },
+    ...
+  ],
+  period: "last_60_days",
+  total_events: 83
 }
 ```
 
-A Edge Function:
-1. Valida a senha contra o secret `ADMIN_PASSWORD`
-2. Consulta a tabela `ab_events` usando o service role
-3. Retorna apenas dados agregados (contadores)
+A agregacao sera feita em JavaScript, agrupando eventos por `YYYY-MM-DD` e hora (0-23).
 
----
+#### 2. Componente `AdminAB.tsx`
 
-### Dashboard Minimalista
-
-Interface super simples:
+Adicionar uma nova secao com tabela usando os componentes Table do shadcn/ui:
 
 ```text
-+----------------------------------------+
-|        Relatorio A/B - Davanti         |
-+----------------------------------------+
-|  Senha: [__________] [Ver Relatorio]   |
-+----------------------------------------+
-|                                        |
-|   WhatsApp (Variante A)     Form (B)   |
-|   +----------------+    +------------+ |
-|   |      45        |    |     38     | |
-|   |    cliques     |    |   envios   | |
-|   +----------------+    +------------+ |
-|                                        |
-|   Por Secao:                           |
-|   - Hero: WA 20 | Form 15              |
-|   - Products: WA 10 | Form 12          |
-+----------------------------------------+
++------------------------------------------+
+|  Conversoes por Data/Hora                |
++------------------------------------------+
+|  Data    | Hora  | WhatsApp | Formulario |
+|----------|-------|----------|------------|
+|  25/01   | 14:00 |    3     |     2      |
+|  25/01   | 15:00 |    1     |     0      |
+|  24/01   | 10:00 |    2     |     1      |
++------------------------------------------+
 ```
-
----
-
-### Fluxo de Gravacao de Eventos
-
-Atualmente os eventos vao apenas para o GTM. Adicionaremos gravacao no banco:
-
-1. **WhatsApp Click**: O `ABTestCTA` chamara uma Edge Function para registrar
-2. **Form Submit**: O `submit-lead` ja existente gravara na tabela `ab_events`
-
-Para manter simplicidade, gravaremos apenas os eventos de conversao real:
-- `whatsapp_click` - quando usuario clica no botao WhatsApp
-- `form_submit` - quando formulario e enviado com sucesso
-
----
-
-### Arquivos a Criar/Modificar
-
-| Arquivo | Acao |
-|---------|------|
-| `supabase/functions/ab-stats/index.ts` | Criar - Edge Function com validacao de senha |
-| `supabase/functions/submit-lead/index.ts` | Modificar - Gravar evento na tabela |
-| `src/pages/AdminAB.tsx` | Criar - Dashboard minimalista |
-| `src/App.tsx` | Modificar - Adicionar rota /admin/ab |
-| `src/hooks/use-ab-test.ts` | Modificar - Chamar edge function no click WhatsApp |
-
----
-
-### Secret Necessario
-
-Sera necessario adicionar um novo secret:
-
-- **ADMIN_PASSWORD**: Senha para acessar o dashboard de relatorios
 
 ---
 
 ### Detalhes Tecnicos
 
-#### Migracao SQL
+#### Atualizacao da Interface TypeScript
 
-```sql
--- Tabela de eventos A/B
-CREATE TABLE public.ab_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_type TEXT NOT NULL CHECK (event_type IN ('whatsapp_click', 'form_submit')),
-  variant TEXT NOT NULL CHECK (variant IN ('whatsapp', 'form')),
-  section TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+```typescript
+interface DateTimeStats {
+  date: string;    // "2026-01-25"
+  hour: number;    // 0-23
+  whatsapp: number;
+  form: number;
+}
 
--- Indice para consultas por periodo
-CREATE INDEX idx_ab_events_created_at ON public.ab_events(created_at DESC);
-
--- RLS habilitado, mas sem politicas de leitura publica
-ALTER TABLE public.ab_events ENABLE ROW LEVEL SECURITY;
+interface ABStats {
+  whatsapp_clicks: number;
+  form_submits: number;
+  by_section: Record<string, { whatsapp: number; form: number }>;
+  by_datetime: DateTimeStats[];  // Nova propriedade
+  period: string;
+  total_events: number;
+}
 ```
 
-#### Edge Function ab-stats
+#### Logica de Agregacao na Edge Function
 
-- Valida senha via comparacao com `Deno.env.get("ADMIN_PASSWORD")`
-- Usa `createClient` com `SUPABASE_SERVICE_ROLE_KEY` para bypassar RLS
-- Retorna agregacoes dos ultimos 60 dias
+```typescript
+// Agrupa por data e hora
+const byDatetime: Record<string, { whatsapp: number; form: number }> = {};
 
-#### Componente AdminAB
+for (const event of events || []) {
+  const eventDate = new Date(event.created_at);
+  const dateKey = eventDate.toISOString().split('T')[0]; // "2026-01-25"
+  const hour = eventDate.getHours();
+  const key = `${dateKey}_${hour}`;
+  
+  if (!byDatetime[key]) {
+    byDatetime[key] = { whatsapp: 0, form: 0 };
+  }
+  
+  if (event.event_type === "whatsapp_click") {
+    byDatetime[key].whatsapp++;
+  } else if (event.event_type === "form_submit") {
+    byDatetime[key].form++;
+  }
+}
 
-- Input de senha (tipo password)
-- Botao para buscar dados
-- Cards simples mostrando totais
-- Lista por secao
-- Sem persistencia de senha no navegador
+// Converte para array ordenado
+const byDatetimeArray = Object.entries(byDatetime)
+  .map(([key, counts]) => {
+    const [date, hour] = key.split('_');
+    return { date, hour: parseInt(hour), ...counts };
+  })
+  .sort((a, b) => {
+    // Ordena por data desc, depois hora desc
+    if (a.date !== b.date) return b.date.localeCompare(a.date);
+    return b.hour - a.hour;
+  });
+```
+
+#### Renderizacao da Tabela
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle className="text-sm font-medium">
+      Conversoes por Data/Hora
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Data</TableHead>
+          <TableHead>Hora</TableHead>
+          <TableHead className="text-right">WhatsApp</TableHead>
+          <TableHead className="text-right">Formulario</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {stats.by_datetime.map((row) => (
+          <TableRow key={`${row.date}_${row.hour}`}>
+            <TableCell>{formatDate(row.date)}</TableCell>
+            <TableCell>{row.hour}:00</TableCell>
+            <TableCell className="text-right" style={{ color: "hsl(142, 76%, 36%)" }}>
+              {row.whatsapp}
+            </TableCell>
+            <TableCell className="text-right text-primary">
+              {row.form}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </CardContent>
+</Card>
+```
 
 ---
 
-### Ordem de Implementacao
+### Arquivos a Modificar
 
-1. Criar tabela `ab_events` via migracao
-2. Adicionar secret `ADMIN_PASSWORD`
-3. Criar Edge Function `ab-stats`
-4. Modificar `submit-lead` para gravar eventos de form
-5. Criar Edge Function `track-ab-event` para eventos WhatsApp
-6. Criar pagina `AdminAB.tsx`
-7. Adicionar rota em `App.tsx`
-8. Atualizar `use-ab-test.ts` para chamar track-ab-event
+| Arquivo | Alteracao |
+|---------|-----------|
+| `supabase/functions/ab-stats/index.ts` | Adicionar agregacao `by_datetime` |
+| `src/pages/AdminAB.tsx` | Adicionar interface e tabela de conversoes |
+
+---
+
+### Limite de Linhas
+
+Para evitar tabelas muito longas, limitaremos a exibicao aos ultimos 50 registros (combinacoes de data/hora com pelo menos 1 evento).
+
