@@ -47,6 +47,7 @@ serve(async (req) => {
     let whatsappClicks = 0;
     let formSubmits = 0;
     const bySection: Record<string, { whatsapp: number; form: number }> = {};
+    const byDatetime: Record<string, { whatsapp: number; form: number }> = {};
 
     for (const event of events || []) {
       if (event.event_type === "whatsapp_click") {
@@ -66,13 +67,42 @@ serve(async (req) => {
       } else if (event.event_type === "form_submit") {
         bySection[section].form++;
       }
+
+      // Agrupa por data e hora
+      const eventDate = new Date(event.created_at);
+      const dateKey = eventDate.toISOString().split('T')[0];
+      const hour = eventDate.getUTCHours();
+      const dtKey = `${dateKey}_${hour}`;
+      
+      if (!byDatetime[dtKey]) {
+        byDatetime[dtKey] = { whatsapp: 0, form: 0 };
+      }
+      
+      if (event.event_type === "whatsapp_click") {
+        byDatetime[dtKey].whatsapp++;
+      } else if (event.event_type === "form_submit") {
+        byDatetime[dtKey].form++;
+      }
     }
+
+    // Converte para array ordenado (mais recentes primeiro), limitado a 50
+    const byDatetimeArray = Object.entries(byDatetime)
+      .map(([key, counts]) => {
+        const [date, hour] = key.split('_');
+        return { date, hour: parseInt(hour), ...counts };
+      })
+      .sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return b.hour - a.hour;
+      })
+      .slice(0, 50);
 
     return new Response(
       JSON.stringify({
         whatsapp_clicks: whatsappClicks,
         form_submits: formSubmits,
         by_section: bySection,
+        by_datetime: byDatetimeArray,
         period: "last_60_days",
         total_events: events?.length || 0,
       }),

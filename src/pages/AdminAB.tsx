@@ -3,16 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MessageCircle, FileText, Lock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+interface DateTimeStats {
+  date: string;
+  hour: number;
+  whatsapp: number;
+  form: number;
+}
 
 interface ABStats {
   whatsapp_clicks: number;
   form_submits: number;
   by_section: Record<string, { whatsapp: number; form: number }>;
+  by_datetime: DateTimeStats[];
   period: string;
   total_events: number;
 }
+
+const formatDate = (dateStr: string) => {
+  const [, month, day] = dateStr.split('-');
+  return `${day}/${month}`;
+};
 
 export default function AdminAB() {
   const [password, setPassword] = useState("");
@@ -161,6 +175,43 @@ export default function AdminAB() {
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Por Data/Hora */}
+            {stats.by_datetime && stats.by_datetime.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium">
+                    Conversões por Data/Hora
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Hora</TableHead>
+                        <TableHead className="text-right">WhatsApp</TableHead>
+                        <TableHead className="text-right">Formulário</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stats.by_datetime.map((row) => (
+                        <TableRow key={`${row.date}_${row.hour}`}>
+                          <TableCell>{formatDate(row.date)}</TableCell>
+                          <TableCell>{String(row.hour).padStart(2, '0')}:00</TableCell>
+                          <TableCell className="text-right" style={{ color: "hsl(142, 76%, 36%)" }}>
+                            {row.whatsapp}
+                          </TableCell>
+                          <TableCell className="text-right text-primary">
+                            {row.form}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             )}
