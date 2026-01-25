@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type ABVariant = "whatsapp" | "form";
 
@@ -18,6 +19,17 @@ function getOrAssignVariant(): ABVariant {
   localStorage.setItem(AB_STORAGE_KEY, variant);
   
   return variant;
+}
+
+// Envia evento para o banco de dados via Edge Function
+async function trackEventToDatabase(eventType: "whatsapp_click" | "form_submit", variant: ABVariant, section?: string) {
+  try {
+    await supabase.functions.invoke("track-ab-event", {
+      body: { event_type: eventType, variant, section },
+    });
+  } catch (err) {
+    console.error("[A/B Test] Erro ao gravar evento:", err);
+  }
 }
 
 export function useABTest() {
@@ -52,12 +64,24 @@ export function useABTest() {
     }
   }, [variant]);
 
+  // Registra clique no WhatsApp (GTM + banco de dados)
+  const trackWhatsAppClick = useCallback((section: string) => {
+    const currentVariant = (localStorage.getItem(AB_STORAGE_KEY) || variant) as ABVariant;
+    
+    // Envia para GTM
+    trackABEvent("ab_test_whatsapp_click", { section });
+    
+    // Envia para banco de dados
+    trackEventToDatabase("whatsapp_click", currentVariant, section);
+  }, [variant, trackABEvent]);
+
   return {
     variant,
     isInitialized,
     isFormVariant: variant === "form",
     isWhatsAppVariant: variant === "whatsapp",
     trackABEvent,
+    trackWhatsAppClick,
   };
 }
 

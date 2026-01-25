@@ -29,7 +29,7 @@ export function ABTestCTA({
   showIcon = true,
   onTrackEvent,
 }: ABTestCTAProps) {
-  const { isFormVariant, trackABEvent } = useABTest();
+  const { isFormVariant, trackABEvent, trackWhatsAppClick } = useABTest();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = () => {
@@ -39,8 +39,8 @@ export function ABTestCTA({
       onTrackEvent?.("ab_test_form_open", { section, button_text: buttonText });
       setIsModalOpen(true);
     } else {
-      // Variante A: Abre o WhatsApp
-      trackABEvent("ab_test_whatsapp_click", { section, button_text: buttonText });
+      // Variante A: Abre o WhatsApp e registra no banco
+      trackWhatsAppClick(section);
       onTrackEvent?.("ab_test_whatsapp_click", { section, button_text: buttonText });
       
       let url = `https://wa.me/${whatsappNumber}`;
