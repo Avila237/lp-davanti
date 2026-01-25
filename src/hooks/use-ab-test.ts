@@ -39,13 +39,17 @@ export function useABTest() {
 
   const trackABEvent = useCallback((eventName: string, data: Record<string, any> = {}) => {
     if (typeof window !== "undefined" && window.dataLayer) {
+      // Busca diretamente do localStorage para garantir valor correto (evita race condition)
+      const currentVariant = localStorage.getItem(AB_STORAGE_KEY) || variant;
+      
       window.dataLayer.push({
         event: eventName,
-        ab_variant: variant,
+        ab_variant: currentVariant,
+        event_category: 'ab_test',
         ...data,
       });
+      console.log(`[A/B Test] ${eventName}:`, { variant: currentVariant, ...data });
     }
-    console.log(`[A/B Test] ${eventName}:`, { variant, ...data });
   }, [variant]);
 
   return {

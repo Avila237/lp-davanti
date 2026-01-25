@@ -52,7 +52,12 @@ export function ABTestCTA({
   };
 
   const handleFormSuccess = () => {
-    trackABEvent("ab_test_form_success", { section });
+    trackABEvent("ab_test_form_success", { 
+      section,
+      button_text: buttonText,
+      event_category: 'conversion',
+      event_label: `form_success_${section}`
+    });
   };
 
   const buttonIcon = icon || (showIcon ? <MessageCircle className="h-4 w-4" /> : null);
