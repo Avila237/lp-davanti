@@ -113,7 +113,12 @@ export function ContactFormModal({
       if (error) throw error;
 
       setIsSuccess(true);
-      onTrackEvent?.("ab_test_form_submit", { section, success: true });
+      onTrackEvent?.("ab_test_form_submit", { 
+        section, 
+        success: true,
+        event_category: 'conversion',
+        event_label: `form_${section}`
+      });
       
       toast({
         title: "Mensagem enviada!",
@@ -129,7 +134,12 @@ export function ContactFormModal({
 
     } catch (error) {
       console.error("Erro ao enviar lead:", error);
-      onTrackEvent?.("ab_test_form_submit", { section, success: false });
+      onTrackEvent?.("ab_test_form_submit", { 
+        section, 
+        success: false,
+        event_category: 'conversion',
+        event_label: `form_${section}_error`
+      });
       
       toast({
         variant: "destructive",
