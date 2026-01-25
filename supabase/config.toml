@@ -2,3 +2,9 @@ project_id = "emuvyqywuvzbrysnlvpz"
 
 [functions.submit-lead]
 verify_jwt = false
+
+[functions.ab-stats]
+verify_jwt = false
+
+[functions.track-ab-event]
+verify_jwt = false

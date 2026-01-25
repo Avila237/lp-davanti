@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,25 @@ function validateInput(name: string, phone: string): { valid: boolean; error?: s
     return { valid: false, error: "Telefone deve ter pelo menos 10 dígitos" };
   }
   return { valid: true };
+}
+
+// Grava evento de conversão no banco
+async function trackFormSubmit(section: string) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    await supabase.from("ab_events").insert({
+      event_type: "form_submit",
+      variant: "form",
+      section: section || null,
+    });
+
+    console.log("[submit-lead] Evento A/B registrado:", { section });
+  } catch (err) {
+    console.error("[submit-lead] Erro ao registrar evento A/B:", err);
+  }
 }
 
 serve(async (req) => {
@@ -62,6 +82,9 @@ serve(async (req) => {
         throw new Error(`Isales API error: ${isalesResponse.status}`);
       }
 
+      // Grava evento de conversão A/B
+      await trackFormSubmit(section);
+
       return new Response(
         JSON.stringify({ success: true, message: "Lead enviado com sucesso" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -76,6 +99,9 @@ serve(async (req) => {
         section: section || "unknown",
         timestamp: new Date().toISOString(),
       });
+
+      // Grava evento de conversão A/B mesmo em modo teste
+      await trackFormSubmit(section);
 
       return new Response(
         JSON.stringify({ 
