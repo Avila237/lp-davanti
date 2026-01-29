@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type ABVariant = "whatsapp" | "form";
 
 const AB_STORAGE_KEY = "davanti_ab_variant";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 // HMAC-SHA256 signature for secure event tracking
 async function generateSignature(payload: string): Promise<string> {
@@ -93,16 +94,34 @@ export function useABTest() {
     }
   }, [variant]);
 
-  // Registra clique no WhatsApp (GTM + banco de dados)
-  const trackWhatsAppClick = useCallback((section: string) => {
-    const currentVariant = (localStorage.getItem(AB_STORAGE_KEY) || variant) as ABVariant;
+  // Registra clique no WhatsApp usando Beacon API (garantia de envio)
+  const trackWhatsAppClickBeacon = useCallback((section: string) => {
+    const currentVariant = localStorage.getItem(AB_STORAGE_KEY) || "whatsapp";
     
     // Envia para GTM
     trackABEvent("ab_test_whatsapp_click", { section });
     
-    // Envia para banco de dados with signature
-    trackEventToDatabase("whatsapp_click", currentVariant, section);
-  }, [variant, trackABEvent]);
+    // Usa Beacon API para garantir envio mesmo durante navegação
+    const data = JSON.stringify({
+      event_type: "whatsapp_click",
+      variant: currentVariant,
+      section,
+    });
+    
+    try {
+      navigator.sendBeacon(
+        `${SUPABASE_URL}/functions/v1/track-ab-beacon`,
+        data
+      );
+    } catch {
+      // Fallback silencioso - não deve quebrar a experiência do usuário
+    }
+  }, [trackABEvent]);
+
+  // Legacy function - mantida para compatibilidade
+  const trackWhatsAppClick = useCallback((section: string) => {
+    trackWhatsAppClickBeacon(section);
+  }, [trackWhatsAppClickBeacon]);
 
   return {
     variant,
@@ -111,6 +130,7 @@ export function useABTest() {
     isWhatsAppVariant: variant === "whatsapp",
     trackABEvent,
     trackWhatsAppClick,
+    trackWhatsAppClickBeacon,
   };
 }
 
