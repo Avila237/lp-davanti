@@ -198,12 +198,21 @@ serve(async (req) => {
       })
       .slice(0, 50);
 
+    // Build individual events list (last 100 with exact timestamps)
+    const individualEvents = (events || []).slice(0, 100).map((event) => ({
+      timestamp: event.created_at,
+      event_type: event.event_type,
+      section: event.section || "unknown",
+      variant: event.variant,
+    }));
+
     return new Response(
       JSON.stringify({
         whatsapp_clicks: whatsappClicks,
         form_submits: formSubmits,
         by_section: bySection,
         by_datetime: byDatetimeArray,
+        individual_events: individualEvents,
         period: "last_60_days",
         total_events: events?.length || 0,
       }),
