@@ -15,11 +15,19 @@ interface DateTimeStats {
   form: number;
 }
 
+interface IndividualEvent {
+  timestamp: string;
+  event_type: string;
+  section: string;
+  variant: string;
+}
+
 interface ABStats {
   whatsapp_clicks: number;
   form_submits: number;
   by_section: Record<string, { whatsapp: number; form: number }>;
   by_datetime: DateTimeStats[];
+  individual_events: IndividualEvent[];
   period: string;
   total_events: number;
 }
@@ -27,6 +35,20 @@ interface ABStats {
 const formatDate = (dateStr: string) => {
   const [, month, day] = dateStr.split('-');
   return `${day}/${month}`;
+};
+
+const formatEventTime = (timestamp: string) => {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
+const formatEventDate = (timestamp: string) => {
+  const date = new Date(timestamp);
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const getEventTypeLabel = (eventType: string) => {
+  return eventType === 'whatsapp_click' ? 'WhatsApp' : 'Formulário';
 };
 
 export default function AdminAB() {
@@ -213,6 +235,45 @@ export default function AdminAB() {
                           </TableCell>
                           <TableCell className="text-right text-primary">
                             {row.form || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Individual Events */}
+            {stats.individual_events && stats.individual_events.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium">
+                    Conversões Individuais
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Hora</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Seção</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stats.individual_events.map((event, idx) => (
+                        <TableRow key={`individual_${idx}_${event.timestamp}`}>
+                          <TableCell>{formatEventDate(event.timestamp)}</TableCell>
+                          <TableCell className="font-mono">{formatEventTime(event.timestamp)}</TableCell>
+                          <TableCell>
+                            <span style={{ color: event.event_type === 'whatsapp_click' ? "hsl(142, 76%, 36%)" : undefined }} className={event.event_type !== 'whatsapp_click' ? 'text-primary' : ''}>
+                              {getEventTypeLabel(event.event_type)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="capitalize text-muted-foreground text-sm">
+                            {event.section}
                           </TableCell>
                         </TableRow>
                       ))}
