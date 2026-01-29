@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface DateTimeStats {
   date: string;
   hour: number;
+  section: string;
   whatsapp: number;
   form: number;
 }
@@ -194,20 +195,24 @@ export default function AdminAB() {
                       <TableRow>
                         <TableHead>Data</TableHead>
                         <TableHead>Hora</TableHead>
+                        <TableHead>Seção</TableHead>
                         <TableHead className="text-right">WhatsApp</TableHead>
                         <TableHead className="text-right">Formulário</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {stats.by_datetime.map((row) => (
-                        <TableRow key={`${row.date}_${row.hour}`}>
+                      {stats.by_datetime.map((row, idx) => (
+                        <TableRow key={`${row.date}_${row.hour}_${row.section}_${idx}`}>
                           <TableCell>{formatDate(row.date)}</TableCell>
                           <TableCell>{String(row.hour).padStart(2, '0')}:00</TableCell>
+                          <TableCell className="capitalize text-muted-foreground text-sm">
+                            {row.section}
+                          </TableCell>
                           <TableCell className="text-right" style={{ color: "hsl(142, 76%, 36%)" }}>
-                            {row.whatsapp}
+                            {row.whatsapp || '-'}
                           </TableCell>
                           <TableCell className="text-right text-primary">
-                            {row.form}
+                            {row.form || '-'}
                           </TableCell>
                         </TableRow>
                       ))}
