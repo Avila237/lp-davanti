@@ -6,11 +6,14 @@ export const Hero = () => {
   return (
     <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
-      <div className="absolute inset-0 z-0" style={{
-        backgroundImage: `url(${heroImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center"
-      }}>
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(222,47%,11%)] via-[hsl(222,47%,11%)]/95 to-[hsl(222,47%,11%)]/80" />
       </div>
 
@@ -18,14 +21,12 @@ export const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20 text-center max-w-5xl">
         <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in">
           Encontre seus óculos de grau, solares e acessórios exclusivos na{" "}
-          <span className="text-secondary">
-            Óptica Davanti
-          </span>{" "}
-          – Ijuí
+          <span className="text-secondary">Óptica Davanti</span>{" "}
         </h1>
-        
+
         <p className="text-base md:text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
-          Mais de 13 anos de tradição em Ijuí, oferecendo atendimento personalizado, as melhores marcas e condições exclusivas.
+          Mais de 13 anos de tradição em Ijuí, oferecendo atendimento personalizado, as melhores marcas e condições
+          exclusivas.
         </p>
 
         <ABTestCTA
