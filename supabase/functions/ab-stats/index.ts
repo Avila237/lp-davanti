@@ -147,7 +147,7 @@ serve(async (req) => {
     let whatsappClicks = 0;
     let formSubmits = 0;
     const bySection: Record<string, { whatsapp: number; form: number }> = {};
-    const byDatetime: Record<string, { whatsapp: number; form: number }> = {};
+    const byDatetime: Record<string, { whatsapp: number; form: number; section: string }> = {};
 
     for (const event of events || []) {
       if (event.event_type === "whatsapp_click") {
@@ -168,14 +168,14 @@ serve(async (req) => {
         bySection[section].form++;
       }
 
-      // Group by date and hour
+      // Group by date, hour, and section
       const eventDate = new Date(event.created_at);
       const dateKey = eventDate.toISOString().split('T')[0];
       const hour = eventDate.getUTCHours();
-      const dtKey = `${dateKey}_${hour}`;
+      const dtKey = `${dateKey}_${hour}_${section}`;
       
       if (!byDatetime[dtKey]) {
-        byDatetime[dtKey] = { whatsapp: 0, form: 0 };
+        byDatetime[dtKey] = { whatsapp: 0, form: 0, section };
       }
       
       if (event.event_type === "whatsapp_click") {
@@ -189,11 +189,12 @@ serve(async (req) => {
     const byDatetimeArray = Object.entries(byDatetime)
       .map(([key, counts]) => {
         const [date, hour] = key.split('_');
-        return { date, hour: parseInt(hour), ...counts };
+        return { date, hour: parseInt(hour), section: counts.section, whatsapp: counts.whatsapp, form: counts.form };
       })
       .sort((a, b) => {
         if (a.date !== b.date) return b.date.localeCompare(a.date);
-        return b.hour - a.hour;
+        if (a.hour !== b.hour) return b.hour - a.hour;
+        return a.section.localeCompare(b.section);
       })
       .slice(0, 50);
 
