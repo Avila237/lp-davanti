@@ -1,175 +1,124 @@
 
 
-## Tabela de Conversoes por Dia e Hora
+## Diagnostico: Tracking de WhatsApp nao registra eventos
 
-### Objetivo
+### Problema Identificado
 
-Adicionar uma tabela simples abaixo dos indicadores principais mostrando as conversoes agrupadas por data e hora, permitindo visualizar quando os usuarios mais convertem.
+O dashboard mostra 100% de conversoes no formulario porque os cliques de WhatsApp nao estao sendo registrados no banco de dados. A analise do banco confirma isso:
 
----
+- `form_submit`: 10 eventos registrados
+- `whatsapp_click`: 0 eventos registrados
 
-### O Que Sera Criado
+### Causa Raiz
 
-Uma tabela minimalista com as seguintes colunas:
+O sistema atual tem uma assimetria critica no tracking:
 
-| Data | Hora | WhatsApp | Formulario |
-|------|------|----------|------------|
-| 25/01 | 14:00 | 3 | 2 |
-| 25/01 | 15:00 | 1 | 0 |
-| 24/01 | 10:00 | 2 | 1 |
+| Variante | Como e registrado | Confiabilidade |
+|----------|-------------------|----------------|
+| Formulario (B) | Server-side na `submit-lead` | Alta - sempre funciona |
+| WhatsApp (A) | Client-side via `track-ab-event` | Baixa - pode falhar silenciosamente |
 
----
+O tracking do WhatsApp falha silenciosamente porque:
+
+1. **Navegacao interrompe a requisicao**: Quando o usuario clica no CTA, o `window.open()` acontece imediatamente apos chamar `trackWhatsAppClick()`. A chamada async para a edge function pode ser cancelada quando o navegador abre uma nova aba
+
+2. **Falhas sao silenciosas**: O `catch` vazio na funcao `trackEventToDatabase()` engole qualquer erro
+
+3. **Nao ha await no fluxo principal**: O `handleClick` nao espera a requisicao completar antes de abrir o WhatsApp
+
+### Solucao Proposta
+
+Modificar o componente `ABTestCTA.tsx` para garantir que o tracking seja enviado ANTES de abrir o WhatsApp, usando uma das seguintes estrategias:
+
+#### Estrategia Recomendada: Beacon API
+
+Usar `navigator.sendBeacon()` que e projetado especificamente para enviar dados de analytics quando o usuario esta saindo da pagina:
+
+```text
++-------------------+
+| Usuario clica CTA |
++-------------------+
+         |
+         v
++---------------------------+
+| sendBeacon() envia dados  |
+| (nao bloqueia, garantido) |
++---------------------------+
+         |
+         v
++-------------------+
+| Abre WhatsApp     |
++-------------------+
+```
 
 ### Alteracoes Necessarias
 
-#### 1. Edge Function `ab-stats`
+#### 1. Novo endpoint dedicado para Beacon (`track-ab-beacon`)
 
-Adicionar uma nova agregacao `by_datetime` que agrupa eventos por dia e hora:
+Criar uma edge function minimalista que aceita dados via Beacon API:
 
-```typescript
-// Nova estrutura de retorno
-{
-  whatsapp_clicks: 45,
-  form_submits: 38,
-  by_section: { ... },
-  by_datetime: [
-    { date: "2026-01-25", hour: 14, whatsapp: 3, form: 2 },
-    { date: "2026-01-25", hour: 15, whatsapp: 1, form: 0 },
-    ...
-  ],
-  period: "last_60_days",
-  total_events: 83
-}
-```
+- Aceita `POST` com `content-type: text/plain` ou `application/x-www-form-urlencoded`
+- Valida apenas campos essenciais (sem HMAC para simplicidade do Beacon)
+- Rate limiting por IP
+- Insere diretamente na tabela `ab_events`
 
-A agregacao sera feita em JavaScript, agrupando eventos por `YYYY-MM-DD` e hora (0-23).
+#### 2. Atualizar `use-ab-test.ts`
 
-#### 2. Componente `AdminAB.tsx`
-
-Adicionar uma nova secao com tabela usando os componentes Table do shadcn/ui:
-
-```text
-+------------------------------------------+
-|  Conversoes por Data/Hora                |
-+------------------------------------------+
-|  Data    | Hora  | WhatsApp | Formulario |
-|----------|-------|----------|------------|
-|  25/01   | 14:00 |    3     |     2      |
-|  25/01   | 15:00 |    1     |     0      |
-|  24/01   | 10:00 |    2     |     1      |
-+------------------------------------------+
-```
-
----
-
-### Detalhes Tecnicos
-
-#### Atualizacao da Interface TypeScript
+Adicionar funcao `trackWhatsAppClickBeacon` que usa Beacon API:
 
 ```typescript
-interface DateTimeStats {
-  date: string;    // "2026-01-25"
-  hour: number;    // 0-23
-  whatsapp: number;
-  form: number;
-}
-
-interface ABStats {
-  whatsapp_clicks: number;
-  form_submits: number;
-  by_section: Record<string, { whatsapp: number; form: number }>;
-  by_datetime: DateTimeStats[];  // Nova propriedade
-  period: string;
-  total_events: number;
-}
-```
-
-#### Logica de Agregacao na Edge Function
-
-```typescript
-// Agrupa por data e hora
-const byDatetime: Record<string, { whatsapp: number; form: number }> = {};
-
-for (const event of events || []) {
-  const eventDate = new Date(event.created_at);
-  const dateKey = eventDate.toISOString().split('T')[0]; // "2026-01-25"
-  const hour = eventDate.getHours();
-  const key = `${dateKey}_${hour}`;
-  
-  if (!byDatetime[key]) {
-    byDatetime[key] = { whatsapp: 0, form: 0 };
-  }
-  
-  if (event.event_type === "whatsapp_click") {
-    byDatetime[key].whatsapp++;
-  } else if (event.event_type === "form_submit") {
-    byDatetime[key].form++;
-  }
-}
-
-// Converte para array ordenado
-const byDatetimeArray = Object.entries(byDatetime)
-  .map(([key, counts]) => {
-    const [date, hour] = key.split('_');
-    return { date, hour: parseInt(hour), ...counts };
-  })
-  .sort((a, b) => {
-    // Ordena por data desc, depois hora desc
-    if (a.date !== b.date) return b.date.localeCompare(a.date);
-    return b.hour - a.hour;
+function trackWhatsAppClickBeacon(section: string) {
+  const variant = localStorage.getItem(AB_STORAGE_KEY) || "whatsapp";
+  const data = JSON.stringify({
+    event_type: "whatsapp_click",
+    variant,
+    section,
   });
+  
+  navigator.sendBeacon(
+    `${SUPABASE_URL}/functions/v1/track-ab-beacon`,
+    data
+  );
+}
 ```
 
-#### Renderizacao da Tabela
+#### 3. Atualizar `ABTestCTA.tsx`
 
-```tsx
-<Card>
-  <CardHeader>
-    <CardTitle className="text-sm font-medium">
-      Conversoes por Data/Hora
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Data</TableHead>
-          <TableHead>Hora</TableHead>
-          <TableHead className="text-right">WhatsApp</TableHead>
-          <TableHead className="text-right">Formulario</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {stats.by_datetime.map((row) => (
-          <TableRow key={`${row.date}_${row.hour}`}>
-            <TableCell>{formatDate(row.date)}</TableCell>
-            <TableCell>{row.hour}:00</TableCell>
-            <TableCell className="text-right" style={{ color: "hsl(142, 76%, 36%)" }}>
-              {row.whatsapp}
-            </TableCell>
-            <TableCell className="text-right text-primary">
-              {row.form}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </CardContent>
-</Card>
+Usar a nova funcao Beacon para cliques de WhatsApp:
+
+```typescript
+const handleClick = () => {
+  if (isFormVariant) {
+    // Variante B permanece igual
+    setIsModalOpen(true);
+  } else {
+    // Variante A: Usa Beacon para garantir envio
+    trackWhatsAppClickBeacon(section);
+    window.open(whatsappUrl, "_blank");
+  }
+};
 ```
 
----
-
-### Arquivos a Modificar
+### Arquivos a Modificar/Criar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `supabase/functions/ab-stats/index.ts` | Adicionar agregacao `by_datetime` |
-| `src/pages/AdminAB.tsx` | Adicionar interface e tabela de conversoes |
+| `supabase/functions/track-ab-beacon/index.ts` | Novo endpoint para Beacon API |
+| `src/hooks/use-ab-test.ts` | Adicionar funcao Beacon |
+| `src/components/ABTestCTA.tsx` | Usar Beacon para WhatsApp |
+| `supabase/config.toml` | Registrar nova funcao |
 
----
+### Beneficios da Solucao
 
-### Limite de Linhas
+1. **Garantia de envio**: Beacon API e projetada para analytics e garante envio mesmo durante navegacao
+2. **Nao bloqueia UX**: O usuario ve o WhatsApp abrir instantaneamente
+3. **Simplicidade**: Endpoint dedicado sem complexidade de HMAC
+4. **Retrocompativel**: Nao quebra funcionalidade existente
 
-Para evitar tabelas muito longas, limitaremos a exibicao aos ultimos 50 registros (combinacoes de data/hora com pelo menos 1 evento).
+### Consideracoes de Seguranca
+
+O endpoint Beacon sera mais simples que o atual `track-ab-event`, mas ainda tera:
+- Rate limiting por IP
+- Validacao de campos (event_type, variant, section)
+- Restricao de origem CORS
 
