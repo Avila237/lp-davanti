@@ -4,16 +4,16 @@ import { ABTestCTA } from "./ABTestCTA";
 
 const testimonials = [
   {
-    name: "Sandra Erstling",
-    text: "Atendimento excelente! Fiz minha compra pelo WhatsApp, tudo rápido e com muito capricho.",
+    name: "Josiane Bonamigo",
+    text: "Fui atrás de um presente para o meu noivo e o Cleverton me atendeu com muito profissionalismo e cuidado, conseguindo encontrar a peça perfeita que eu estava procurando! Super indico, peças lindas, únicas e de muita qualidade e um atendimento nota mil. Gratidão!",
   },
   {
-    name: "Dienifer Paz",
-    text: "Loja incrível com produtos de alta qualidade e atendimento nota mil!",
+    name: "Thiago Ribeiro",
+    text: "Excelente! Como comentei com a vendedora Laura, que por sinal me atendeu super bem. A qualidade dos produtos é sem dúvidas a melhor da região. Compro e recomendo. Obrigado Laura pelo atendimento, muito atenciosa aos detalhes e sempre disposta. Parabéns.",
   },
   {
-    name: "Lázaro Valdês",
-    text: "Já sou cliente a anos, pois sempre fui bem atendido, valores justos e equipe de venda é fantástica, com certeza voltarei a comprar novamente.",
+    name: "Maira Giaretta",
+    text: "Sempre sou bem atendida pela equipe Davanti. A Loja sempre está com novidades, produtos exclusivos e diferentes. Quando se trata de óculos de grau, gosto do cuidado e zelo pela informação e qualidade do trabalho. Em especial a atenção do Clev que orienta a melhor escolha de acordo à minha necessidade. Nota 10!",
   },
 ];
 
