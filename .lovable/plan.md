@@ -1,58 +1,56 @@
 
-## Exibir Conversoes Individuais com Hora Exata
 
-### Situacao Atual
+## Atualizar Depoimentos de Clientes
 
-Hoje os eventos sao agrupados por hora (ex: "14:00"). O banco de dados ja tem o campo `created_at` com timestamp completo de cada evento, mas a edge function agrega os dados antes de enviar.
+### Depoimentos Atuais vs Novos
 
-### Alteracoes Necessarias
+| Atual | Novo |
+|-------|------|
+| Sandra Erstling | Josiane Bonamigo |
+| Dienifer Paz | Thiago Ribeiro |
+| Lazaro Valdes | Maira Giaretta |
 
-#### 1. Edge Function (`ab-stats/index.ts`)
+### Novos Textos Extraidos das Imagens
 
-Adicionar um novo campo `individual_events` na resposta que retorna cada evento individualmente:
+**1. Josiane Bonamigo**
+> "Fui atras de um presente para o meu noivo e o Cleverton me atendeu com muito profissionalismo e cuidado, conseguindo encontrar a peca perfeita que eu estava procurando! Super indico, pecas lindas, unicas e de muita qualidade e um atendimento nota mil. Gratidao!"
 
-```text
-Dados retornados atualmente:
-- by_datetime: agregado por hora
+**2. Thiago Ribeiro**
+> "Excelente! Como comentei com a vendedora Laura, que por sinal me atendeu super bem. A qualidade dos produtos e sem duvidas a melhor da regiao. Compro e recomendo. Obrigado Laura pelo atendimento, muito atenciosa aos detalhes e sempre disposta. Parabens."
 
-Novos dados:
-- individual_events: lista de cada evento com timestamp exato
+**3. Maira Giaretta**
+> "Sempre sou bem atendida pela equipe Davanti. A Loja sempre esta com novidades, produtos exclusivos e diferentes. Quando se trata de oculos de grau, gosto do cuidado e zelo pela informacao e qualidade do trabalho. Em especial a atencao do Clev que orienta a melhor escolha de acordo a minha necessidade. Nota 10!"
+
+### Alteracao Necessaria
+
+Atualizar o array `testimonials` no arquivo `src/components/Testimonials.tsx`:
+
+```typescript
+const testimonials = [
+  {
+    name: "Josiane Bonamigo",
+    text: "Fui atrás de um presente para o meu noivo e o Cleverton me atendeu com muito profissionalismo e cuidado, conseguindo encontrar a peça perfeita que eu estava procurando! Super indico, peças lindas, únicas e de muita qualidade e um atendimento nota mil. Gratidão!",
+  },
+  {
+    name: "Thiago Ribeiro",
+    text: "Excelente! Como comentei com a vendedora Laura, que por sinal me atendeu super bem. A qualidade dos produtos é sem dúvidas a melhor da região. Compro e recomendo. Obrigado Laura pelo atendimento, muito atenciosa aos detalhes e sempre disposta. Parabéns.",
+  },
+  {
+    name: "Maira Giaretta",
+    text: "Sempre sou bem atendida pela equipe Davanti. A Loja sempre está com novidades, produtos exclusivos e diferentes. Quando se trata de óculos de grau, gosto do cuidado e zelo pela informação e qualidade do trabalho. Em especial a atenção do Clev que orienta a melhor escolha de acordo à minha necessidade. Nota 10!",
+  },
+];
 ```
 
-Estrutura de cada evento individual:
-
-| Campo | Descricao |
-|-------|-----------|
-| timestamp | Data/hora exata (ex: "2026-01-29T16:42:33") |
-| event_type | "whatsapp_click" ou "form_submit" |
-| section | Secao do site (hero, products, etc) |
-| variant | Variante do teste (whatsapp ou form) |
-
-Limite: 100 eventos mais recentes para nao sobrecarregar a interface.
-
-#### 2. Dashboard (`AdminAB.tsx`)
-
-Adicionar nova tabela "Conversoes Individuais" abaixo da tabela agregada:
-
-| Data | Hora | Tipo | Secao |
-|------|------|------|-------|
-| 29/01 | 16:42:33 | WhatsApp | hero |
-| 29/01 | 16:38:15 | Formulario | products |
-| 29/01 | 15:22:47 | WhatsApp | benefits |
-
-A hora sera exibida no formato HH:MM:SS (ex: "16:42:33").
-
-### Beneficios
-
-- Visibilidade total de cada conversao
-- Hora exata de cada clique/envio
-- Analise detalhada do comportamento do usuario
-- Manter a visao agregada para analise rapida
-
-### Arquivos a Modificar
+### Arquivo a Modificar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `supabase/functions/ab-stats/index.ts` | Adicionar `individual_events` na resposta |
-| `src/pages/AdminAB.tsx` | Nova tabela para eventos individuais |
+| `src/components/Testimonials.tsx` | Substituir array de depoimentos |
+
+### Observacoes
+
+- Os textos serao adaptados com acentuacao correta
+- O emoji do ultimo depoimento sera removido para manter consistencia visual
+- A estrutura do componente permanece a mesma (nome + texto + 5 estrelas)
 
