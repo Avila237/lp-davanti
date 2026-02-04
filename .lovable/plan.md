@@ -1,56 +1,138 @@
 
 
-## Atualizar Depoimentos de Clientes
+## Corrigir Rastreamento de Cliques WhatsApp
 
-### Depoimentos Atuais vs Novos
+### Diagnostico
 
-| Atual | Novo |
-|-------|------|
-| Sandra Erstling | Josiane Bonamigo |
-| Dienifer Paz | Thiago Ribeiro |
-| Lazaro Valdes | Maira Giaretta |
+A investigacao revelou que:
+- O banco de dados tem apenas 1 clique WhatsApp registrado (em 29/01, secao "test_beacon")
+- A Edge Function `track-ab-beacon` funciona perfeitamente quando testada manualmente
+- Os envios de formulario estao sendo registrados normalmente (16 eventos)
+- O problema esta no lado do cliente - a Beacon API nao esta conseguindo enviar os dados
 
-### Novos Textos Extraidos das Imagens
+### Causa Raiz Identificada
 
-**1. Josiane Bonamigo**
-> "Fui atras de um presente para o meu noivo e o Cleverton me atendeu com muito profissionalismo e cuidado, conseguindo encontrar a peca perfeita que eu estava procurando! Super indico, pecas lindas, unicas e de muita qualidade e um atendimento nota mil. Gratidao!"
+A Beacon API (`navigator.sendBeacon`) tem limitacoes:
+1. Nao envia cabecalho `Origin` de forma confiavel em todos os navegadores
+2. O Content-Type e enviado como `text/plain` sem charset em alguns casos
+3. Erros sao silenciosos - nao ha como saber se o envio falhou
 
-**2. Thiago Ribeiro**
-> "Excelente! Como comentei com a vendedora Laura, que por sinal me atendeu super bem. A qualidade dos produtos e sem duvidas a melhor da regiao. Compro e recomendo. Obrigado Laura pelo atendimento, muito atenciosa aos detalhes e sempre disposta. Parabens."
+### Solucao Proposta
 
-**3. Maira Giaretta**
-> "Sempre sou bem atendida pela equipe Davanti. A Loja sempre esta com novidades, produtos exclusivos e diferentes. Quando se trata de oculos de grau, gosto do cuidado e zelo pela informacao e qualidade do trabalho. Em especial a atencao do Clev que orienta a melhor escolha de acordo a minha necessidade. Nota 10!"
+Implementar um sistema hibrido que garante o envio usando duas estrategias:
 
-### Alteracao Necessaria
+#### 1. Estrategia Principal: Fetch com keepalive
 
-Atualizar o array `testimonials` no arquivo `src/components/Testimonials.tsx`:
+Usar `fetch()` com a opcao `keepalive: true`, que funciona como Beacon mas permite tratamento de erros:
 
 ```typescript
-const testimonials = [
-  {
-    name: "Josiane Bonamigo",
-    text: "Fui atrás de um presente para o meu noivo e o Cleverton me atendeu com muito profissionalismo e cuidado, conseguindo encontrar a peça perfeita que eu estava procurando! Super indico, peças lindas, únicas e de muita qualidade e um atendimento nota mil. Gratidão!",
-  },
-  {
-    name: "Thiago Ribeiro",
-    text: "Excelente! Como comentei com a vendedora Laura, que por sinal me atendeu super bem. A qualidade dos produtos é sem dúvidas a melhor da região. Compro e recomendo. Obrigado Laura pelo atendimento, muito atenciosa aos detalhes e sempre disposta. Parabéns.",
-  },
-  {
-    name: "Maira Giaretta",
-    text: "Sempre sou bem atendida pela equipe Davanti. A Loja sempre está com novidades, produtos exclusivos e diferentes. Quando se trata de óculos de grau, gosto do cuidado e zelo pela informação e qualidade do trabalho. Em especial a atenção do Clev que orienta a melhor escolha de acordo à minha necessidade. Nota 10!",
-  },
-];
+const trackWhatsAppClick = async (section: string) => {
+  const data = {
+    event_type: "whatsapp_click",
+    variant: currentVariant,
+    section,
+  };
+
+  // Tenta fetch com keepalive (mais confiavel que Beacon)
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/track-ab-beacon`, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" },
+      keepalive: true, // Garante envio mesmo ao sair da pagina
+    });
+  } catch {
+    // Fallback: tenta Beacon API
+    navigator.sendBeacon(
+      `${SUPABASE_URL}/functions/v1/track-ab-beacon`,
+      new Blob([JSON.stringify(data)], { type: "application/json" })
+    );
+  }
+};
 ```
 
-### Arquivo a Modificar
+#### 2. Usar Blob para Beacon API
+
+Quando usar Beacon API, enviar como `Blob` com tipo correto:
+
+```typescript
+const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+navigator.sendBeacon(url, blob);
+```
+
+### Arquivos a Modificar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/components/Testimonials.tsx` | Substituir array de depoimentos |
+| `src/hooks/use-ab-test.ts` | Implementar fetch com keepalive + fallback Beacon com Blob |
+| `supabase/functions/track-ab-beacon/index.ts` | Adicionar suporte a Content-Type application/json |
 
-### Observacoes
+### Detalhes Tecnicos
 
-- Os textos serao adaptados com acentuacao correta
-- O emoji do ultimo depoimento sera removido para manter consistencia visual
-- A estrutura do componente permanece a mesma (nome + texto + 5 estrelas)
+#### Alteracao 1: use-ab-test.ts
+
+Modificar a funcao `trackWhatsAppClickBeacon`:
+
+```typescript
+const trackWhatsAppClickBeacon = useCallback(async (section: string) => {
+  const currentVariant = localStorage.getItem(AB_STORAGE_KEY) || "whatsapp";
+  
+  // Envia para GTM
+  trackABEvent("ab_test_whatsapp_click", { section });
+  
+  const data = {
+    event_type: "whatsapp_click",
+    variant: currentVariant,
+    section,
+  };
+  
+  const url = `${SUPABASE_URL}/functions/v1/track-ab-beacon`;
+  
+  // Estrategia 1: fetch com keepalive (mais confiavel)
+  try {
+    await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+    });
+  } catch {
+    // Estrategia 2: Beacon API com Blob (fallback)
+    try {
+      const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+      navigator.sendBeacon(url, blob);
+    } catch {
+      // Silencioso - analytics nao deve quebrar UX
+    }
+  }
+}, [trackABEvent]);
+```
+
+#### Alteracao 2: track-ab-beacon/index.ts
+
+Ajustar o parser de Content-Type para aceitar mais formatos:
+
+```typescript
+// Parse body - aceita mais formatos de Content-Type
+const contentType = req.headers.get("content-type") || "";
+
+const text = await req.text();
+let body;
+
+try {
+  body = JSON.parse(text);
+} catch {
+  return new Response(
+    JSON.stringify({ error: "Invalid JSON" }),
+    { status: 400, headers: corsHeaders }
+  );
+}
+```
+
+### Resultado Esperado
+
+- Cliques no WhatsApp serao registrados de forma confiavel
+- Compatibilidade com todos os navegadores modernos
+- Fallback automatico se uma estrategia falhar
+- Sem impacto na experiencia do usuario
 
