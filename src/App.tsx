@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminAB from "./pages/AdminAB";
+import InstagramRedirect from "./pages/InstagramRedirect";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/admin/ab" element={<AdminAB />} />
+          <Route path="/instagram" element={<InstagramRedirect />} />
+          <Route path="/insta" element={<InstagramRedirect />} />
+          <Route path="/bio" element={<InstagramRedirect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
