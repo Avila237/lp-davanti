@@ -1,138 +1,96 @@
 
 
-## Corrigir Rastreamento de Cliques WhatsApp
+## Rastreamento de Origem Instagram/Meta Ads
 
-### Diagnostico
+### O Problema
 
-A investigacao revelou que:
-- O banco de dados tem apenas 1 clique WhatsApp registrado (em 29/01, secao "test_beacon")
-- A Edge Function `track-ab-beacon` funciona perfeitamente quando testada manualmente
-- Os envios de formulario estao sendo registrados normalmente (16 eventos)
-- O problema esta no lado do cliente - a Beacon API nao esta conseguindo enviar os dados
+Hoje voce nao consegue diferenciar no Google Analytics se o visitante veio:
+- Direto do Google/YouTube Ads
+- Do Instagram (clicando no link da bio)
 
-### Causa Raiz Identificada
+### A Solucao
 
-A Beacon API (`navigator.sendBeacon`) tem limitacoes:
-1. Nao envia cabecalho `Origin` de forma confiavel em todos os navegadores
-2. O Content-Type e enviado como `text/plain` sem charset em alguns casos
-3. Erros sao silenciosos - nao ha como saber se o envio falhou
+Criar uma rota especial `/instagram` (ou `/insta`, `/bio`) que redireciona para a home (`/`) mas **adiciona automaticamente os parametros UTM** necessarios para o Google Analytics identificar essa origem.
 
-### Solucao Proposta
+### Como Vai Funcionar
 
-Implementar um sistema hibrido que garante o envio usando duas estrategias:
-
-#### 1. Estrategia Principal: Fetch com keepalive
-
-Usar `fetch()` com a opcao `keepalive: true`, que funciona como Beacon mas permite tratamento de erros:
-
-```typescript
-const trackWhatsAppClick = async (section: string) => {
-  const data = {
-    event_type: "whatsapp_click",
-    variant: currentVariant,
-    section,
-  };
-
-  // Tenta fetch com keepalive (mais confiavel que Beacon)
-  try {
-    await fetch(`${SUPABASE_URL}/functions/v1/track-ab-beacon`, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" },
-      keepalive: true, // Garante envio mesmo ao sair da pagina
-    });
-  } catch {
-    // Fallback: tenta Beacon API
-    navigator.sendBeacon(
-      `${SUPABASE_URL}/functions/v1/track-ab-beacon`,
-      new Blob([JSON.stringify(data)], { type: "application/json" })
-    );
-  }
-};
+```text
+Usuario clica no link da bio do Instagram
+          |
+          v
+Acessa: lp-davanti.lovable.app/instagram
+          |
+          v
+Redireciona para: lp-davanti.lovable.app/?utm_source=instagram&utm_medium=social&utm_campaign=bio_link
+          |
+          v
+Google Analytics registra origem como "instagram / social"
 ```
 
-#### 2. Usar Blob para Beacon API
+### Implementacao
 
-Quando usar Beacon API, enviar como `Blob` com tipo correto:
+#### 1. Criar Pagina de Redirecionamento
+
+Criar `src/pages/InstagramRedirect.tsx` que:
+- Detecta a URL de destino
+- Adiciona os parametros UTM
+- Redireciona instantaneamente para a home
+
+#### 2. Adicionar Rota no App.tsx
 
 ```typescript
-const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-navigator.sendBeacon(url, blob);
+<Route path="/instagram" element={<InstagramRedirect />} />
+<Route path="/insta" element={<InstagramRedirect />} />
+<Route path="/bio" element={<InstagramRedirect />} />
 ```
 
-### Arquivos a Modificar
+Varias rotas para flexibilidade (voce escolhe qual usar na bio).
+
+#### 3. Parametros UTM Configurados
+
+| Parametro | Valor | Descricao |
+|-----------|-------|-----------|
+| utm_source | instagram | Origem do trafego |
+| utm_medium | social | Tipo de canal |
+| utm_campaign | bio_link | Identificador da campanha |
+
+### Beneficios
+
+- **Zero configuracao no GTM/GA4**: Os parametros UTM sao detectados automaticamente
+- **Relatorios separados**: No GA4 voce vera "instagram / social" como fonte distinta
+- **URLs curtas**: /instagram ou /insta sao faceis de lembrar
+- **Extensivel**: Facil adicionar novas origens no futuro (ex: /tiktok, /facebook)
+
+### No Google Analytics
+
+Apos implementar, no GA4 voce vera no relatorio de Aquisicao:
+
+| Origem / Midia | Usuarios | Conversoes |
+|----------------|----------|------------|
+| google / cpc | 150 | 12 |
+| youtube / video | 80 | 5 |
+| instagram / social | 45 | 8 |
+| (direct) / (none) | 30 | 2 |
+
+### Arquivo a Criar
+
+| Arquivo | Descricao |
+|---------|-----------|
+| `src/pages/InstagramRedirect.tsx` | Componente de redirecionamento com UTMs |
+
+### Arquivo a Modificar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/hooks/use-ab-test.ts` | Implementar fetch com keepalive + fallback Beacon com Blob |
-| `supabase/functions/track-ab-beacon/index.ts` | Adicionar suporte a Content-Type application/json |
+| `src/App.tsx` | Adicionar rotas /instagram, /insta, /bio |
 
-### Detalhes Tecnicos
+### URL Final para Usar na Bio
 
-#### Alteracao 1: use-ab-test.ts
+Apos publicar, voce usara uma destas URLs na bio do Instagram:
 
-Modificar a funcao `trackWhatsAppClickBeacon`:
+- `lp-davanti.lovable.app/instagram`
+- `lp-davanti.lovable.app/insta`
+- `lp-davanti.lovable.app/bio`
 
-```typescript
-const trackWhatsAppClickBeacon = useCallback(async (section: string) => {
-  const currentVariant = localStorage.getItem(AB_STORAGE_KEY) || "whatsapp";
-  
-  // Envia para GTM
-  trackABEvent("ab_test_whatsapp_click", { section });
-  
-  const data = {
-    event_type: "whatsapp_click",
-    variant: currentVariant,
-    section,
-  };
-  
-  const url = `${SUPABASE_URL}/functions/v1/track-ab-beacon`;
-  
-  // Estrategia 1: fetch com keepalive (mais confiavel)
-  try {
-    await fetch(url, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-    });
-  } catch {
-    // Estrategia 2: Beacon API com Blob (fallback)
-    try {
-      const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-      navigator.sendBeacon(url, blob);
-    } catch {
-      // Silencioso - analytics nao deve quebrar UX
-    }
-  }
-}, [trackABEvent]);
-```
-
-#### Alteracao 2: track-ab-beacon/index.ts
-
-Ajustar o parser de Content-Type para aceitar mais formatos:
-
-```typescript
-// Parse body - aceita mais formatos de Content-Type
-const contentType = req.headers.get("content-type") || "";
-
-const text = await req.text();
-let body;
-
-try {
-  body = JSON.parse(text);
-} catch {
-  return new Response(
-    JSON.stringify({ error: "Invalid JSON" }),
-    { status: 400, headers: corsHeaders }
-  );
-}
-```
-
-### Resultado Esperado
-
-- Cliques no WhatsApp serao registrados de forma confiavel
-- Compatibilidade com todos os navegadores modernos
-- Fallback automatico se uma estrategia falhar
-- Sem impacto na experiencia do usuario
+Todas funcionam igual e redirecionam para a home com os parametros UTM corretos.
 
