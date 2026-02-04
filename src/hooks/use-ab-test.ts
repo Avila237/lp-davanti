@@ -94,27 +94,37 @@ export function useABTest() {
     }
   }, [variant]);
 
-  // Registra clique no WhatsApp usando Beacon API (garantia de envio)
-  const trackWhatsAppClickBeacon = useCallback((section: string) => {
+  // Registra clique no WhatsApp usando fetch com keepalive + fallback Beacon
+  const trackWhatsAppClickBeacon = useCallback(async (section: string) => {
     const currentVariant = localStorage.getItem(AB_STORAGE_KEY) || "whatsapp";
     
     // Envia para GTM
     trackABEvent("ab_test_whatsapp_click", { section });
     
-    // Usa Beacon API para garantir envio mesmo durante navegação
-    const data = JSON.stringify({
+    const data = {
       event_type: "whatsapp_click",
       variant: currentVariant,
       section,
-    });
+    };
     
+    const url = `${SUPABASE_URL}/functions/v1/track-ab-beacon`;
+    
+    // Estratégia 1: fetch com keepalive (mais confiável que Beacon)
     try {
-      navigator.sendBeacon(
-        `${SUPABASE_URL}/functions/v1/track-ab-beacon`,
-        data
-      );
+      await fetch(url, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+      });
     } catch {
-      // Fallback silencioso - não deve quebrar a experiência do usuário
+      // Estratégia 2: Beacon API com Blob (fallback)
+      try {
+        const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+        navigator.sendBeacon(url, blob);
+      } catch {
+        // Silencioso - analytics não deve quebrar UX
+      }
     }
   }, [trackABEvent]);
 

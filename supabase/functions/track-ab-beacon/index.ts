@@ -85,23 +85,15 @@ serve(async (req) => {
       );
     }
 
-    // Parse body - Beacon API sends as text/plain or application/json
+    // Parse body - aceita qualquer Content-Type e tenta parsear como JSON
     let body: { event_type?: string; variant?: string; section?: string };
-    const contentType = req.headers.get("content-type") || "";
+    const text = await req.text();
     
-    if (contentType.includes("application/json") || contentType.includes("text/plain")) {
-      const text = await req.text();
-      try {
-        body = JSON.parse(text);
-      } catch {
-        return new Response(
-          JSON.stringify({ error: "Invalid JSON" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    } else {
+    try {
+      body = JSON.parse(text);
+    } catch {
       return new Response(
-        JSON.stringify({ error: "Unsupported content type" }),
+        JSON.stringify({ error: "Invalid JSON" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
