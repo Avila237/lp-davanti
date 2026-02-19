@@ -33,7 +33,7 @@ export const Header = () => {
       section: 'header',
       button_text: 'Ligar'
     });
-    window.location.href = "tel:+5555991372807";
+    window.location.href = "tel:+5555991166688";
   };
 
   const handleNavClick = (href: string, label?: string) => {
@@ -104,7 +104,7 @@ export const Header = () => {
             <ABTestCTA
               section="header"
               buttonText="WhatsApp"
-              whatsappNumber="5555991372807"
+              whatsappNumber="5555991166688"
               whatsappMessage="Olá, vim pelo site e gostaria de informações"
               variant="whatsapp"
               size="sm"
@@ -126,7 +126,7 @@ export const Header = () => {
             <ABTestCTA
               section="header_mobile"
               buttonText=""
-              whatsappNumber="5555991372807"
+              whatsappNumber="5555991166688"
               whatsappMessage="Olá, vim pelo site e gostaria de informações"
               variant="whatsapp"
               size="sm"
@@ -163,7 +163,7 @@ export const Header = () => {
                     <ABTestCTA
                       section="header_mobile_menu"
                       buttonText="WhatsApp"
-                      whatsappNumber="5555991372807"
+                      whatsappNumber="5555991166688"
                       whatsappMessage="Olá, vim pelo site e gostaria de informações"
                       variant="whatsapp"
                       className="w-full"

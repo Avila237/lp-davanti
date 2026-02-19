@@ -32,7 +32,7 @@ export const Hero = () => {
         <ABTestCTA
           section="hero"
           buttonText="Conversar no WhatsApp"
-          whatsappNumber="5555991372807"
+          whatsappNumber="5555991166688"
           whatsappMessage="Olá, vim pelo site e gostaria de ajuda."
           variant="whatsapp"
           size="lg"

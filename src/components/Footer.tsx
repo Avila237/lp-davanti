@@ -11,7 +11,7 @@ export const Footer = () => {
       section: 'footer',
       button_text: 'Ligar'
     });
-    window.location.href = "tel:+5555991068376";
+    window.location.href = "tel:+5555991166688";
   };
 
   const handleMaps = () => {
@@ -37,7 +37,7 @@ export const Footer = () => {
             <ABTestCTA
               section="footer"
               buttonText="WhatsApp"
-              whatsappNumber="5555991068376"
+              whatsappNumber="5555991166688"
               whatsappMessage="Olá, vim pelo site e gostaria de ajuda."
               variant="secondary"
               size="lg"
