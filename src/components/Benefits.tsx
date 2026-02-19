@@ -186,7 +186,7 @@ export const Benefits = () => {
           <ABTestCTA
             section="benefits"
             buttonText="Falar com nossa equipe"
-            whatsappNumber="5555991068376"
+            whatsappNumber="5555991166688"
             whatsappMessage="Olá, vim pelo site e gostaria de olhar alguns exclusivos"
             variant="whatsapp"
             size="lg"

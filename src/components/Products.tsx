@@ -85,7 +85,7 @@ export const Products = () => {
                 <ABTestCTA
                   section={`products_${product.title.toLowerCase().replace(/\s+/g, '_')}`}
                   buttonText="Ver opções"
-                  whatsappNumber="5555991372807"
+                  whatsappNumber="5555991166688"
                   variant="whatsapp"
                   size="sm"
                   className="w-full"

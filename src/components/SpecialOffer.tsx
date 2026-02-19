@@ -11,7 +11,7 @@ export const SpecialOffer = () => {
       section: 'special_offer',
       button_text: 'Ligar agora'
     });
-    window.location.href = "tel:+5555991068376";
+    window.location.href = "tel:+5555991166688";
   };
 
   return (
@@ -47,7 +47,7 @@ export const SpecialOffer = () => {
             <ABTestCTA
               section="special_offer"
               buttonText="Quero meu desconto"
-              whatsappNumber="5555991068376"
+              whatsappNumber="5555991166688"
               whatsappMessage="Olá, vim pelo site e gostaria de aproveitar meus 15% de desconto na primeira compra!"
               variant="secondary"
               size="xl"
