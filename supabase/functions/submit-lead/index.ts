@@ -6,6 +6,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting: max 5 submissions per IP per 10 minutes
+const submissionAttempts = new Map<string, { count: number; windowStart: number }>();
+const MAX_SUBMISSIONS = 5;
+const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function getClientIP(req: Request): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+         req.headers.get("x-real-ip") ||
+         "unknown";
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const record = submissionAttempts.get(ip);
+
+  if (!record || now - record.windowStart >= WINDOW_MS) {
+    submissionAttempts.set(ip, { count: 1, windowStart: now });
+    return { allowed: true };
+  }
+
+  if (record.count >= MAX_SUBMISSIONS) {
+    const retryAfter = Math.ceil((WINDOW_MS - (now - record.windowStart)) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  record.count++;
+  return { allowed: true };
+}
+
 function validateInput(name: string, phone: string): { valid: boolean; error?: string } {
   if (!name || name.trim().length < 2) {
     return { valid: false, error: "Nome deve ter pelo menos 2 caracteres" };
@@ -42,6 +71,24 @@ serve(async (req) => {
   }
 
   try {
+    const clientIP = getClientIP(req);
+
+    // Check rate limit before processing
+    const rateCheck = checkRateLimit(clientIP);
+    if (!rateCheck.allowed) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Muitas tentativas. Tente novamente em alguns minutos." }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": String(rateCheck.retryAfter),
+          },
+        }
+      );
+    }
+
     const { name, phone, source, section } = await req.json();
 
     const validation = validateInput(name, phone);
