@@ -1,38 +1,95 @@
 
-## Atualização do Número de WhatsApp
 
-### Números Encontrados
+## Pagina de Carreiras - Trabalhe na Davanti
 
-O novo número é **55 99116-6688**, que em formato internacional fica: `5555991166688`
+### Visao Geral
 
-Há dois tipos de números no código:
+Criar uma subpagina `/carreiras` com a mesma identidade visual da LP, inspirada no Notion Careers, para divulgar vagas de emprego. As vagas serao gerenciadas dinamicamente pelo banco de dados, e a candidatura sera feita via WhatsApp com mensagem pre-preenchida sobre a vaga.
 
-**Números que serão ALTERADOS (contato geral da loja):**
-- `5555991372807` — aparece em: Header (desktop, mobile, menu mobile), Hero, Products, Testimonials
-- `5555991068376` — aparece em: Footer, SpecialOffer, Benefits
+### Estrutura da Pagina
 
-**Números que serão MANTIDOS (lojas específicas em Locations.tsx):**
-- `5555991372807` — Matriz
-- `5555991068376` — Loja 2
-- `5555997196834` — Loja 3
+A pagina tera duas "visoes":
 
-Também há o número de telefone no `handleCall` do Header (`tel:+5555991372807`), que será atualizado para o novo número.
+1. **Listagem de vagas** (`/carreiras`) -- inspirada no Notion Careers
+   - Header da Davanti (reutilizado)
+   - Hero compacto com titulo "Trabalhe na Davanti" e texto motivacional
+   - Filtro por departamento/loja (ex: Matriz, Loja 2, Loja 3)
+   - Lista de vagas agrupadas por departamento, cada uma mostrando: titulo, loja/local, tipo (CLT, estagio, etc.)
+   - Footer da Davanti (reutilizado)
+
+2. **Detalhe da vaga** (`/carreiras/:id`) -- inspirada no Ashby/Notion
+   - Layout com sidebar esquerda (local, tipo de contrato, departamento)
+   - Conteudo principal com descricao da vaga, requisitos e beneficios
+   - Botao "Candidatar-se pelo WhatsApp" que abre o WhatsApp com mensagem pre-preenchida com o nome da vaga
+
+### Banco de Dados
+
+Uma tabela `job_listings` para armazenar as vagas:
+
+| Coluna | Tipo | Descricao |
+|--------|------|-----------|
+| id | uuid | Identificador unico |
+| title | text | Titulo da vaga (ex: "Consultor(a) de Vendas") |
+| department | text | Departamento (ex: "Vendas", "Administrativo") |
+| location | text | Loja (ex: "Matriz", "Loja 2") |
+| employment_type | text | Tipo (ex: "CLT", "Estagio", "Meio Periodo") |
+| description | text | Descricao completa da vaga (Markdown) |
+| requirements | text | Requisitos (Markdown) |
+| benefits | text | Beneficios oferecidos (Markdown) |
+| whatsapp_number | text | Numero do WhatsApp para candidatura |
+| is_active | boolean | Se a vaga esta ativa (default: true) |
+| created_at | timestamptz | Data de criacao |
+
+RLS: Leitura publica (SELECT) para vagas ativas, sem INSERT/UPDATE/DELETE via cliente.
+
+### Fluxo do Candidato
+
+```text
+Acessa /carreiras
+    |
+    v
+Ve lista de vagas agrupadas por departamento
+    |
+    v
+Clica em uma vaga
+    |
+    v
+Acessa /carreiras/:id com detalhes completos
+    |
+    v
+Clica "Candidatar-se pelo WhatsApp"
+    |
+    v
+WhatsApp abre com mensagem:
+"Ola, tenho interesse na vaga de [Titulo da Vaga] na [Loja]. Vi pelo site da Davanti."
+```
+
+### Arquivos a Criar
+
+| Arquivo | Descricao |
+|---------|-----------|
+| `src/pages/Careers.tsx` | Pagina de listagem de vagas |
+| `src/pages/CareerDetail.tsx` | Pagina de detalhe da vaga |
+| `src/components/careers/CareersHero.tsx` | Hero compacto da pagina de carreiras |
+| `src/components/careers/JobCard.tsx` | Card de cada vaga na listagem |
+| `src/components/careers/JobDetail.tsx` | Conteudo detalhado da vaga |
+| `src/components/careers/DepartmentFilter.tsx` | Filtro por departamento/loja |
 
 ### Arquivos a Modificar
 
-| Arquivo | Ocorrências | Observação |
-|---------|-------------|------------|
-| `src/components/Header.tsx` | 3 (WhatsApp) + 1 (tel:) | Desktop, mobile icon, menu mobile e botão ligar |
-| `src/components/Hero.tsx` | 1 | Botão principal do hero |
-| `src/components/Products.tsx` | 1 | Botões dos produtos |
-| `src/components/Testimonials.tsx` | 1 | CTA da seção de depoimentos |
-| `src/components/SpecialOffer.tsx` | 1 | Oferta especial |
-| `src/components/Footer.tsx` | 1 | Rodapé |
-| `src/components/Benefits.tsx` | 1 | Seção de diferenciais |
+| Arquivo | Alteracao |
+|---------|-----------|
+| `src/App.tsx` | Adicionar rotas `/carreiras` e `/carreiras/:id` |
 
-**Arquivo que NÃO será alterado:**
-- `src/components/Locations.tsx` — números das lojas individuais permanecem intactos
+### Design Visual
 
-### Resultado
+- Mesma paleta: navy escuro (`hsl(222,47%,11%)`), dourado (`hsl(45,93%,47%)`), fundo branco
+- Header e Footer reutilizados da LP principal
+- Cards das vagas com `shadow-elegant` e hover `shadow-glow`
+- Hero compacto com `gradient-hero` (navy)
+- Pagina de detalhe com layout sidebar + conteudo, limpo e tipografico como o Ashby
 
-Todos os CTAs, textos, variante A/B e lógica de rastreamento permanecem exatamente iguais. Apenas o número de destino do WhatsApp é substituído pelo novo: `5555991166688`.
+### Gestao das Vagas
+
+As vagas serao gerenciadas pelo banco de dados do Lovable Cloud. Para adicionar, editar ou remover vagas, voce podera usar o painel do backend diretamente. A pagina refletira automaticamente as vagas ativas cadastradas.
+
