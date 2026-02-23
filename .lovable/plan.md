@@ -1,21 +1,32 @@
 
 
-## Adicionar Botao "Trabalhe Conosco" no Rodape
+## Corrigir Scroll ao Navegar para /carreiras
 
-### O que muda
+### Problema
 
-Adicionar um botao "Trabalhe Conosco" no rodape (`src/components/Footer.tsx`) que direciona para a pagina `/carreiras`.
+Ao clicar em "Trabalhe Conosco" no rodape, a pagina `/carreiras` abre mas nao rola para o topo. O usuario ve o meio ou final da pagina.
+
+### Causa
+
+O React Router nao faz scroll para o topo automaticamente ao navegar entre rotas. E necessario adicionar esse comportamento manualmente.
+
+### Solucao
+
+Adicionar um componente `ScrollToTop` que escuta mudancas de rota e faz `window.scrollTo(0, 0)` automaticamente.
 
 ### Alteracoes
 
 | Arquivo | O que muda |
 |---------|-----------|
-| `src/components/Footer.tsx` | Importar `Link` do `react-router-dom`; adicionar botao "Trabalhe Conosco" na area de botoes do rodape, usando `Link to="/carreiras"` com estilo consistente aos demais botoes |
+| `src/components/ScrollToTop.tsx` | Criar componente que usa `useLocation` e `useEffect` para rolar ao topo a cada mudanca de rota |
+| `src/App.tsx` | Importar e adicionar `<ScrollToTop />` dentro do `<BrowserRouter>`, antes das rotas |
 
 ### Detalhes Tecnicos
 
-- Importar `Link` de `react-router-dom` e o icone `Briefcase` de `lucide-react`
-- Adicionar um novo `Button` com `variant="outline"` e estilo identico aos botoes "Ligar" e "Ver rota mais proxima" (`bg-white/10 text-white border-white/30 hover:bg-white/20`)
-- Usar `asChild` no Button para envolver o `Link to="/carreiras"`
-- Posicionar o botao junto aos demais na linha de CTAs do rodape
+- Criar `ScrollToTop.tsx` com:
+  ```
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  ```
+- Colocar `<ScrollToTop />` logo apos o `<BrowserRouter>` (ou `<Router>`) no `App.tsx`
+- Isso corrige o problema para todas as navegacoes entre paginas, nao apenas "Trabalhe Conosco"
 
