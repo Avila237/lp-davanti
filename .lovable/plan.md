@@ -1,32 +1,30 @@
 
 
-## Corrigir Scroll ao Navegar para /carreiras
+## Corrigir Navegação do Menu em Páginas Internas
 
 ### Problema
 
-Ao clicar em "Trabalhe Conosco" no rodape, a pagina `/carreiras` abre mas nao rola para o topo. O usuario ve o meio ou final da pagina.
+Os links do menu (Início, Produtos, Diferenciais, etc.) usam âncoras como `#produtos`, `#lojas`, etc. Isso funciona na página principal, mas em outras páginas como `/carreiras` os elementos com esses IDs não existem, então nada acontece ao clicar.
 
-### Causa
+### Solução
 
-O React Router nao faz scroll para o topo automaticamente ao navegar entre rotas. E necessario adicionar esse comportamento manualmente.
+Atualizar o `handleNavClick` no Header para detectar se o usuário está na home. Se não estiver, navegar para `/#secao` (home + âncora). Ao chegar na home, o scroll suave será feito automaticamente para a seção correta.
 
-### Solucao
-
-Adicionar um componente `ScrollToTop` que escuta mudancas de rota e faz `window.scrollTo(0, 0)` automaticamente.
-
-### Alteracoes
+### Alterações
 
 | Arquivo | O que muda |
 |---------|-----------|
-| `src/components/ScrollToTop.tsx` | Criar componente que usa `useLocation` e `useEffect` para rolar ao topo a cada mudanca de rota |
-| `src/App.tsx` | Importar e adicionar `<ScrollToTop />` dentro do `<BrowserRouter>`, antes das rotas |
+| `src/components/Header.tsx` | Importar `useNavigate`; no `handleNavClick`, se `pathname !== "/"`, usar `navigate("/" + href)` para ir à home com a âncora |
 
-### Detalhes Tecnicos
+### Detalhes Técnicos
 
-- Criar `ScrollToTop.tsx` com:
-  ```
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-  ```
-- Colocar `<ScrollToTop />` logo apos o `<BrowserRouter>` (ou `<Router>`) no `App.tsx`
-- Isso corrige o problema para todas as navegacoes entre paginas, nao apenas "Trabalhe Conosco"
+- Importar `useNavigate` de `react-router-dom`
+- No `handleNavClick`: verificar `isHome`
+  - Se **sim**: manter comportamento atual (scroll suave)
+  - Se **não**: usar `navigate("/" + href)` para navegar à home — o `ScrollToTop` levará ao topo, e depois será necessário um pequeno `setTimeout` para fazer scroll até a seção após a navegação
+- Alternativa mais simples: quando fora da home, usar `navigate("/")` e passar o hash como state, e na Index tratar o scroll. Porém a abordagem mais direta é usar `navigate("/" + href)` e na home detectar o hash na URL para fazer scroll.
+
+A implementação mais limpa:
+1. Quando fora da home, navegar para `/{href}` (ex: `/#produtos`)
+2. Na página Index, adicionar um `useEffect` que verifica `location.hash` e faz scroll suave até o elemento correspondente
 
