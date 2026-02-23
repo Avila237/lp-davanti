@@ -1,5 +1,4 @@
-import { MapPin, Briefcase, Building2, MessageCircle, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface JobDetailProps {
@@ -44,41 +43,9 @@ export const JobDetail = ({ job }: JobDetailProps) => {
 
   return (
     <div className="container mx-auto px-4 py-10 md:py-16 max-w-5xl">
-      <Link
-        to="/carreiras"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-smooth mb-8"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Voltar às vagas
-      </Link>
-
       <div className="flex flex-col md:flex-row gap-10">
         {/* Sidebar */}
         <aside className="md:w-72 shrink-0 space-y-6">
-          <div className="rounded-xl border border-border bg-card p-6 space-y-5">
-            <div>
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Departamento</span>
-              <p className="flex items-center gap-2 mt-1 text-foreground font-medium">
-                <Building2 className="h-4 w-4 text-secondary" />
-                {job.department}
-              </p>
-            </div>
-            <div>
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Local</span>
-              <p className="flex items-center gap-2 mt-1 text-foreground font-medium">
-                <MapPin className="h-4 w-4 text-secondary" />
-                {job.location}
-              </p>
-            </div>
-            <div>
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Tipo</span>
-              <p className="flex items-center gap-2 mt-1 text-foreground font-medium">
-                <Briefcase className="h-4 w-4 text-secondary" />
-                {job.employment_type}
-              </p>
-            </div>
-          </div>
-
           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block">
             <Button variant="whatsapp" size="lg" className="w-full">
               <MessageCircle className="h-5 w-5 mr-2" />
@@ -89,7 +56,6 @@ export const JobDetail = ({ job }: JobDetailProps) => {
 
         {/* Main content */}
         <main className="flex-1 min-w-0">
-          <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-8">{job.title}</h1>
 
           {job.description && (
             <section className="mb-8">
