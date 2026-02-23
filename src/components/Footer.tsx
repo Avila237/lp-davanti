@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Phone, Navigation } from "lucide-react";
+import { MessageCircle, Phone, Navigation, Briefcase } from "lucide-react";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { ABTestCTA } from "./ABTestCTA";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const { trackEvent } = useAnalytics();
@@ -63,6 +64,18 @@ export const Footer = () => {
             >
               <Navigation className="mr-2 h-5 w-5" />
               Ver rota mais próxima
+            </Button>
+
+            <Button 
+              variant="outline" 
+              size="lg"
+              asChild
+              className="bg-white/10 text-white border-white/30 hover:bg-white/20"
+            >
+              <Link to="/carreiras">
+                <Briefcase className="mr-2 h-5 w-5" />
+                Trabalhe Conosco
+              </Link>
             </Button>
           </div>
 
