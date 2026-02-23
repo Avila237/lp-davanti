@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminAB from "./pages/AdminAB";
 import InstagramRedirect from "./pages/InstagramRedirect";
+import Careers from "./pages/Careers";
+import CareerDetail from "./pages/CareerDetail";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +21,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/admin/ab" element={<AdminAB />} />
+          <Route path="/carreiras" element={<Careers />} />
+          <Route path="/carreiras/:id" element={<CareerDetail />} />
           <Route path="/instagram" element={<InstagramRedirect />} />
           <Route path="/insta" element={<InstagramRedirect />} />
           <Route path="/bio" element={<InstagramRedirect />} />
