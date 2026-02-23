@@ -1,27 +1,45 @@
 
 
-## Melhorar Velocidade Percebida da Pagina de Carreiras
+## Corrigir Header da Pagina de Detalhe da Vaga
 
 ### Problema
 
-A query ao banco retorna rapido (200 OK em milissegundos), mas a pagina mostra apenas o texto "Carregando vagas..." sem nenhum feedback visual, o que da a sensacao de lentidao. Alem disso, o React Query nao tem `staleTime` configurado, causando refetches desnecessarios a cada navegacao.
+A pagina de detalhe da vaga (`/carreiras/:id`) nao tem o header azul gradiente (hero) que a pagina de listagem tem. O conteudo aparece colado no topo, sem identidade visual consistente.
 
 ### Solucao
 
-1. **Adicionar skeleton loading** -- substituir o texto "Carregando vagas..." por cards skeleton animados (shimmer) que simulam o layout final, dando feedback visual imediato.
-
-2. **Configurar cache do React Query** -- adicionar `staleTime` de 5 minutos para que, ao voltar a pagina, os dados aparecam instantaneamente do cache.
+Adicionar um mini-hero com o gradiente azul na pagina de detalhe, mostrando o titulo da vaga e o departamento. Isso cria consistencia visual com a pagina de listagem.
 
 ### Alteracoes
 
 | Arquivo | O que muda |
 |---------|-----------|
-| `src/pages/Careers.tsx` | Substituir texto de loading por componente skeleton; adicionar `staleTime: 5 * 60 * 1000` na query |
+| `src/pages/CareerDetail.tsx` | Substituir o `<Header />` + `<div className="pt-20">` por um hero compacto com gradiente azul contendo o titulo da vaga, link de voltar e info basica |
+| `src/components/careers/JobDetail.tsx` | Remover o link "Voltar as vagas" e o titulo `<h1>` do componente, pois eles passam para o hero do CareerDetail |
+
+### Resultado Visual
+
+```text
++--------------------------------------------------+
+| [Logo]              Menu            [WhatsApp]    |  <- Header fixo
++--------------------------------------------------+
+| ============= GRADIENTE AZUL =================== |
+|                                                   |
+|   <- Voltar as vagas                              |
+|   Auxiliar Administrativo          (titulo)       |
+|   Administrativo · Matriz - Ijui   (subtitulo)   |
+|                                                   |
+| ================================================= |
+|                                                   |
+|   [Sidebar]          [Conteudo da vaga]           |
+|                                                   |
++--------------------------------------------------+
+```
 
 ### Detalhes Tecnicos
 
-- Usar o componente `Skeleton` ja existente em `src/components/ui/skeleton.tsx`
-- Renderizar 3 cards skeleton com altura similar ao `JobCard` real
-- Adicionar `staleTime: 300000` (5 min) no `useQuery` para cache entre navegacoes
-- Nenhuma alteracao no backend necessaria
-
+- Reutilizar a classe `gradient-hero` ja existente no projeto
+- Manter o `<Header />` dentro do CareerDetail (ele ja e fixo com `fixed top-0`)
+- O hero tera `pt-28 pb-10 md:pt-36 md:pb-14` para respeitar o header fixo
+- Remover o `<h1>` e o link "Voltar" de dentro do `JobDetail.tsx` para evitar duplicacao
+- Mover o link "Voltar as vagas" para dentro do hero (sobre o gradiente azul, em branco)
