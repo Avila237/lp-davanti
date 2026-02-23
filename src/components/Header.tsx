@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -19,6 +19,7 @@ const menuItems = [
 export const Header = () => {
   const { trackEvent } = useAnalytics();
   const location = useLocation();
+  const navigate = useNavigate();
   const isHome = location.pathname === "/";
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -47,6 +48,10 @@ export const Header = () => {
       });
     }
     setIsOpen(false);
+    if (!isHome) {
+      navigate("/" + href);
+      return;
+    }
     const element = document.querySelector(href);
     if (element) {
       const headerOffset = 80;
