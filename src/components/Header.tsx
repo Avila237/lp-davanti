@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,6 +18,8 @@ const menuItems = [
 
 export const Header = () => {
   const { trackEvent } = useAnalytics();
+  const location = useLocation();
+  const isHome = location.pathname === "/";
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -68,19 +71,31 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo e Nome */}
-          <a
-            href="#inicio"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick("#inicio");
-            }}
-            className="flex items-center gap-3 hover:opacity-80 transition-smooth"
-          >
-            <img src={logo} alt="Logo Óptica Davanti" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
-            <span className="text-xl font-bold text-white hidden sm:block">
-              Óptica Davanti
-            </span>
-          </a>
+          {isHome ? (
+            <a
+              href="#inicio"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavClick("#inicio");
+              }}
+              className="flex items-center gap-3 hover:opacity-80 transition-smooth"
+            >
+              <img src={logo} alt="Logo Óptica Davanti" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
+              <span className="text-xl font-bold text-white hidden sm:block">
+                Óptica Davanti
+              </span>
+            </a>
+          ) : (
+            <Link
+              to="/"
+              className="flex items-center gap-3 hover:opacity-80 transition-smooth"
+            >
+              <img src={logo} alt="Logo Óptica Davanti" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
+              <span className="text-xl font-bold text-white hidden sm:block">
+                Óptica Davanti
+              </span>
+            </Link>
+          )}
 
           {/* Menu Desktop */}
           <nav className="hidden lg:flex items-center gap-8">
