@@ -1,26 +1,21 @@
 
 
-## Ajustar Logo para Redirecionar à Página Principal
+## Adicionar Botao "Trabalhe Conosco" no Rodape
 
-### Problema
+### O que muda
 
-Atualmente, o logo e o nome "Óptica Davanti" no Header usam uma âncora `#inicio` com scroll suave. Isso funciona na página principal, mas em outras páginas (como `/carreiras`) não leva o usuário de volta à home.
+Adicionar um botao "Trabalhe Conosco" no rodape (`src/components/Footer.tsx`) que direciona para a pagina `/carreiras`.
 
-### Solução
-
-Substituir o `<a href="#inicio">` por um `<Link to="/">` do React Router. Quando o usuário já estiver na home (`/`), fazer scroll suave até o topo. Quando estiver em outra página, navegar para `/`.
-
-### Alterações
+### Alteracoes
 
 | Arquivo | O que muda |
 |---------|-----------|
-| `src/components/Header.tsx` | Importar `Link` e `useLocation` do `react-router-dom`; substituir o `<a>` do logo por lógica que usa `Link to="/"` ou scroll suave dependendo da rota atual |
+| `src/components/Footer.tsx` | Importar `Link` do `react-router-dom`; adicionar botao "Trabalhe Conosco" na area de botoes do rodape, usando `Link to="/carreiras"` com estilo consistente aos demais botoes |
 
-### Detalhes Técnicos
+### Detalhes Tecnicos
 
-- Importar `useLocation` e `Link` de `react-router-dom`
-- Usar `useLocation().pathname` para verificar se o usuário está na home
-- Se `pathname === "/"`: fazer scroll suave para o topo (comportamento atual)
-- Se `pathname !== "/"`: usar `Link to="/"` para navegar à home
-- Manter a mesma aparência visual (logo + texto "Óptica Davanti")
+- Importar `Link` de `react-router-dom` e o icone `Briefcase` de `lucide-react`
+- Adicionar um novo `Button` com `variant="outline"` e estilo identico aos botoes "Ligar" e "Ver rota mais proxima" (`bg-white/10 text-white border-white/30 hover:bg-white/20`)
+- Usar `asChild` no Button para envolver o `Link to="/carreiras"`
+- Posicionar o botao junto aos demais na linha de CTAs do rodape
 
