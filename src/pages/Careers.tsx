@@ -6,6 +6,7 @@ import { DepartmentFilter } from "@/components/careers/DepartmentFilter";
 import { JobCard } from "@/components/careers/JobCard";
 import { Footer } from "@/components/Footer";
 import { Briefcase } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Careers = () => {
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
@@ -21,6 +22,7 @@ const Careers = () => {
       if (error) throw error;
       return data;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const departments = useMemo(
@@ -54,7 +56,20 @@ const Careers = () => {
         />
 
         {isLoading ? (
-          <div className="text-center text-muted-foreground py-20">Carregando vagas...</div>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center justify-between p-5 rounded-xl border border-border bg-card">
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-5 w-48" />
+                  <div className="flex gap-3">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                </div>
+                <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+              </div>
+            ))}
+          </div>
         ) : grouped.length === 0 ? (
           <div className="text-center py-20">
             <Briefcase className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
