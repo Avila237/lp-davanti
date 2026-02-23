@@ -38,6 +38,48 @@ export type Database = {
         }
         Relationships: []
       }
+      job_listings: {
+        Row: {
+          benefits: string
+          created_at: string
+          department: string
+          description: string
+          employment_type: string
+          id: string
+          is_active: boolean
+          location: string
+          requirements: string
+          title: string
+          whatsapp_number: string
+        }
+        Insert: {
+          benefits?: string
+          created_at?: string
+          department: string
+          description?: string
+          employment_type?: string
+          id?: string
+          is_active?: boolean
+          location: string
+          requirements?: string
+          title: string
+          whatsapp_number?: string
+        }
+        Update: {
+          benefits?: string
+          created_at?: string
+          department?: string
+          description?: string
+          employment_type?: string
+          id?: string
+          is_active?: boolean
+          location?: string
+          requirements?: string
+          title?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
