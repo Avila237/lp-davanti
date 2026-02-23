@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.track-ab-beacon]
 verify_jwt = false
+
+[functions.admin-jobs]
+verify_jwt = false
