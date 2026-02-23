@@ -1,95 +1,77 @@
 
 
-## Pagina de Carreiras - Trabalhe na Davanti
+## Painel Admin Unificado
 
-### Visao Geral
+### Resumo
 
-Criar uma subpagina `/carreiras` com a mesma identidade visual da LP, inspirada no Notion Careers, para divulgar vagas de emprego. As vagas serao gerenciadas dinamicamente pelo banco de dados, e a candidatura sera feita via WhatsApp com mensagem pre-preenchida sobre a vaga.
+Transformar a pagina `/admin/ab` em um painel admin completo com duas abas:
+1. **Relatorio A/B** (funcionalidade atual, mantida intacta)
+2. **Vagas de Emprego** (CRUD completo para gerenciar `job_listings`)
 
-### Estrutura da Pagina
+A autenticacao continua usando a mesma senha ADMIN_PASSWORD via edge function. Uma vez autenticado, o admin pode navegar entre as abas sem precisar digitar a senha novamente.
 
-A pagina tera duas "visoes":
+### Arquitetura
 
-1. **Listagem de vagas** (`/carreiras`) -- inspirada no Notion Careers
-   - Header da Davanti (reutilizado)
-   - Hero compacto com titulo "Trabalhe na Davanti" e texto motivacional
-   - Filtro por departamento/loja (ex: Matriz, Loja 2, Loja 3)
-   - Lista de vagas agrupadas por departamento, cada uma mostrando: titulo, loja/local, tipo (CLT, estagio, etc.)
-   - Footer da Davanti (reutilizado)
-
-2. **Detalhe da vaga** (`/carreiras/:id`) -- inspirada no Ashby/Notion
-   - Layout com sidebar esquerda (local, tipo de contrato, departamento)
-   - Conteudo principal com descricao da vaga, requisitos e beneficios
-   - Botao "Candidatar-se pelo WhatsApp" que abre o WhatsApp com mensagem pre-preenchida com o nome da vaga
-
-### Banco de Dados
-
-Uma tabela `job_listings` para armazenar as vagas:
-
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid | Identificador unico |
-| title | text | Titulo da vaga (ex: "Consultor(a) de Vendas") |
-| department | text | Departamento (ex: "Vendas", "Administrativo") |
-| location | text | Loja (ex: "Matriz", "Loja 2") |
-| employment_type | text | Tipo (ex: "CLT", "Estagio", "Meio Periodo") |
-| description | text | Descricao completa da vaga (Markdown) |
-| requirements | text | Requisitos (Markdown) |
-| benefits | text | Beneficios oferecidos (Markdown) |
-| whatsapp_number | text | Numero do WhatsApp para candidatura |
-| is_active | boolean | Se a vaga esta ativa (default: true) |
-| created_at | timestamptz | Data de criacao |
-
-RLS: Leitura publica (SELECT) para vagas ativas, sem INSERT/UPDATE/DELETE via cliente.
-
-### Fluxo do Candidato
+O gerenciamento de vagas precisa de uma edge function dedicada (`admin-jobs`) que valida a senha e executa operacoes CRUD com service role (bypass RLS), ja que a tabela `job_listings` nao permite INSERT/UPDATE/DELETE pelo cliente.
 
 ```text
-Acessa /carreiras
+Tela de login (senha)
     |
     v
-Ve lista de vagas agrupadas por departamento
+Validacao via edge function (ADMIN_PASSWORD)
     |
     v
-Clica em uma vaga
-    |
-    v
-Acessa /carreiras/:id com detalhes completos
-    |
-    v
-Clica "Candidatar-se pelo WhatsApp"
-    |
-    v
-WhatsApp abre com mensagem:
-"Ola, tenho interesse na vaga de [Titulo da Vaga] na [Loja]. Vi pelo site da Davanti."
+Painel com Tabs
+    |-- Relatorio A/B (dados via ab-stats, como hoje)
+    |-- Vagas de Emprego (CRUD via admin-jobs)
+         |-- Listar vagas (ativas + inativas)
+         |-- Criar nova vaga
+         |-- Editar vaga existente
+         |-- Ativar/desativar vaga
+         |-- Excluir vaga
 ```
 
 ### Arquivos a Criar
 
 | Arquivo | Descricao |
 |---------|-----------|
-| `src/pages/Careers.tsx` | Pagina de listagem de vagas |
-| `src/pages/CareerDetail.tsx` | Pagina de detalhe da vaga |
-| `src/components/careers/CareersHero.tsx` | Hero compacto da pagina de carreiras |
-| `src/components/careers/JobCard.tsx` | Card de cada vaga na listagem |
-| `src/components/careers/JobDetail.tsx` | Conteudo detalhado da vaga |
-| `src/components/careers/DepartmentFilter.tsx` | Filtro por departamento/loja |
+| `supabase/functions/admin-jobs/index.ts` | Edge function para CRUD de vagas com autenticacao por ADMIN_PASSWORD |
+| `src/components/admin/AdminLayout.tsx` | Layout do painel com tabs (Relatorio A/B, Vagas) |
+| `src/components/admin/ABReport.tsx` | Conteudo do relatorio A/B (extraido do AdminAB.tsx atual) |
+| `src/components/admin/JobsManager.tsx` | Listagem e gerenciamento de vagas |
+| `src/components/admin/JobForm.tsx` | Formulario de criar/editar vaga |
 
 ### Arquivos a Modificar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/App.tsx` | Adicionar rotas `/carreiras` e `/carreiras/:id` |
+| `src/pages/AdminAB.tsx` | Refatorar para usar AdminLayout com tabs; a tela de senha fica neste nivel e repassa a senha autenticada para os componentes filhos |
 
-### Design Visual
+### Edge Function `admin-jobs`
 
-- Mesma paleta: navy escuro (`hsl(222,47%,11%)`), dourado (`hsl(45,93%,47%)`), fundo branco
-- Header e Footer reutilizados da LP principal
-- Cards das vagas com `shadow-elegant` e hover `shadow-glow`
-- Hero compacto com `gradient-hero` (navy)
-- Pagina de detalhe com layout sidebar + conteudo, limpo e tipografico como o Ashby
+Recebe a senha + acao no body. Acoes suportadas:
 
-### Gestao das Vagas
+- `list` -- retorna todas as vagas (ativas e inativas)
+- `create` -- cria nova vaga
+- `update` -- atualiza vaga existente (por id)
+- `delete` -- remove vaga (por id)
+- `toggle` -- ativa/desativa vaga (por id)
 
-As vagas serao gerenciadas pelo banco de dados do Lovable Cloud. Para adicionar, editar ou remover vagas, voce podera usar o painel do backend diretamente. A pagina refletira automaticamente as vagas ativas cadastradas.
+Reutiliza a mesma logica de autenticacao (constant-time comparison, rate limiting) da `ab-stats`.
+
+### Interface do Gerenciador de Vagas
+
+- Tabela com todas as vagas mostrando: titulo, departamento, local, tipo, status (ativa/inativa)
+- Botao "Nova Vaga" abre formulario
+- Cada linha tem acoes: editar, ativar/desativar, excluir
+- Formulario com campos: titulo, departamento, local, tipo de contrato, numero WhatsApp, descricao, requisitos, beneficios
+- Campos de texto longo (descricao, requisitos, beneficios) usam textarea
+
+### Detalhes Tecnicos
+
+- A senha e armazenada em estado React apos autenticacao bem-sucedida e enviada em cada chamada de edge function (stateless, sem tokens/sessoes)
+- Tabs implementadas com componente Tabs do Radix UI (ja disponivel no projeto)
+- A aba de Relatorio A/B mantem exatamente a mesma interface e logica atuais
+- Nenhuma alteracao no banco de dados e necessaria (a tabela `job_listings` ja existe com todos os campos)
+- Nenhuma alteracao nas RLS policies (a edge function usa service role para bypass)
 
